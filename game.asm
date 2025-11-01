@@ -8,22 +8,22 @@ UPDATE_GAME proc
     je MENU_LOOP
 
     MENU_LOOP:
-        mov BL, 2 ; color 
-        mov DH, 0 ; line 
-        mov DL, 0 ; column 
-        mov BP, offset scramble_title 
+        mov bl, 2 ; color 
+        mov dh, 0 ; line 
+        mov dl, 0 ; column 
+        mov bp, offset scramble_title 
         call PRINT_STR
 
-        mov BL, 15 ; color 
-        mov DH, 16 ; line 
-        mov DL, 18 ; column 
-        mov BP, offset start 
+        mov bl, 15 ; color 
+        mov dh, 16 ; line 
+        mov dl, 18 ; column 
+        mov bp, offset start 
         call PRINT_STR
 
-        mov BL, 15 ; color 
-        mov DH, 19 ; line 
-        mov DL, 18 ; column 
-        mov BP, offset exit 
+        mov bl, 15 ; color 
+        mov dh, 19 ; line 
+        mov dl, 18 ; column 
+        mov bp, offset exit 
         call PRINT_STR
 
     ; TODO: game logic

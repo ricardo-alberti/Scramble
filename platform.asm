@@ -11,18 +11,17 @@
 ; CALCULA_TAM_STRING proc
 ; INIT_WINDOW proc
 
-
-; scroll window with video memory directly
+; fill screen with black 
 CLEAR_SCREEN proc
     push ax
     push cx
     push di
     
-    mov ax, offset VIDEO_SEG
+    mov ax, VIDEO_SEG ; ES = 0A000h (video memory)
     mov es, ax
-    xor di, di
-    xor al, al
-    mov cx, 64000
+    xor di, di        ; start at beginning of video memory
+    xor al, al        ; color 0 (black)
+    mov cx, 64000     ; 320 * 200 = 64,000 pixels
     rep stosb
     
     pop di
