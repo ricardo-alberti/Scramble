@@ -15,6 +15,7 @@ CLEAR_SCREEN proc
     mov es, ax
     xor di, di        ; start at beginning of video memory
     xor al, al        ; color 0 (black)
+    mov al, 7
     mov cx, 64000     ; 320 * 200 = 64,000 pixels
     rep stosb
     
@@ -25,8 +26,8 @@ CLEAR_SCREEN proc
 endp
 
 ; SI = sprite data pointer
-; BH = row on screen
-; BL = column on screen
+; bx = column on screen (0-320)
+; cl= row on screen (0-200)
 DRAW_SPRITE proc
     push ax
     push bx
@@ -40,12 +41,10 @@ DRAW_SPRITE proc
 
     ; calculate DI = row*320 + column
     xor ax, ax    
-    mov al, bh
+    mov al, cl
     mov dx, 320
     mul dx        ; AX = row*320
-    xor dx, dx
-    mov dl, bl
-    add ax, dx
+    add ax, bx
     mov di, ax
 
     mov cx, SPRITE_HEIGHT   ; outer loop: rows
@@ -120,7 +119,6 @@ PRINT_STR proc
     ret
 PRINT_STR endp
 
-;------------------------------------
 ; Input:  SI = string address
 ; Output: CX = string length (up to '$')
 GET_STR_SIZE proc

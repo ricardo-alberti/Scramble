@@ -18,7 +18,6 @@ UPDATE_GAME proc
         mov dh, 16 ; line 
         mov dl, 18 ; column 
         mov bp, offset start 
-
         call PRINT_STR
 
         mov bl, 15 ; color 
@@ -29,8 +28,8 @@ UPDATE_GAME proc
 
     MENU_ANIMATION:
         mov si, offset jet
-        mov bh, 0
-        mov bl, 0
+        mov bx, 300
+        mov cl, 180
         call DRAW_SPRITE
 
 
