@@ -5,12 +5,6 @@
 ; - Custom interruptions
 ; - File I/O
 
-; functions implemented:
-; CLEAR_SCREEN proc
-; PRINT_STR proc
-; CALCULA_TAM_STRING proc
-; INIT_WINDOW proc
-
 ; fill screen with black 
 CLEAR_SCREEN proc
     push ax
@@ -29,6 +23,57 @@ CLEAR_SCREEN proc
     pop ax
     ret
 endp
+
+; SI = sprite data pointer
+; BH = row on screen
+; BL = column on screen
+DRAW_SPRITE proc
+    push ax
+    push bx
+    push cx
+    push dx
+    push di
+    push si
+
+    mov ax, VIDEO_SEG
+    mov es, ax
+
+    ; calculate DI = row*320 + column
+    xor ax, ax    
+    mov al, bh
+    mov dx, 320
+    mul dx        ; AX = row*320
+    xor dx, dx
+    mov dl, bl
+    add ax, dx
+    mov di, ax
+
+    mov cx, SPRITE_HEIGHT   ; outer loop: rows
+DRAW_ROW:
+    mov dx, SPRITE_WIDTH    ; inner loop: columns
+DRAW_PIXEL:
+    lodsb                   ; AL = sprite byte, SI++
+    cmp al, 0
+    je SKIP_PIXEL
+    stosb                   ; write pixel
+    jmp NEXT_PIXEL
+SKIP_PIXEL:
+    inc di                   ; skip transparent pixel
+NEXT_PIXEL:
+    dec dx
+    jnz DRAW_PIXEL
+
+    add di, 320 - SPRITE_WIDTH  ; move DI to next screen row
+    loop DRAW_ROW
+
+    pop si
+    pop di
+    pop dx
+    pop cx
+    pop ax
+    pop bx
+    ret
+DRAW_SPRITE endp
 
 ; video mode 320 × 200 (video mode = 13h)
 ; 1 pixel = 1 byte
@@ -76,7 +121,6 @@ PRINT_STR proc
 PRINT_STR endp
 
 ;------------------------------------
-
 ; Input:  SI = string address
 ; Output: CX = string length (up to '$')
 GET_STR_SIZE proc
@@ -93,4 +137,3 @@ done:
     pop ax
     ret
 GET_STR_SIZE endp
-

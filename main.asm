@@ -6,14 +6,17 @@
 
 ; constants --------------------------
 
-CR        equ 13       ; carriage return
-LF        equ 10       ; line feed
-VIDEO_SEG equ 0A000h   ; video segment start
+CR            equ 13       ; carriage return
+LF            equ 10       ; line feed
+VIDEO_SEG     equ 0A000h   ; video segment start
+SPRITE_WIDTH  equ 24
+SPRITE_HEIGHT equ 16
 
 ; ------------------------------------
 
 ; strings ----------------------------
 
+box_corners db "┌┐└┘─│$"
 start db "Start$"
 exit db "Exit$"
 
@@ -30,13 +33,31 @@ scramble_title db "  ___                    _    _      ", CR, LF
 menu_active db 1
 exit_game db 0
 
+positions dw 100 DUP(0)        ; position of elements
+active_count db 1 DUP(1)       ; active elements
+
 ; ------------------------------------
 
 ; sprites ----------------------------
 
-; -
+jet db   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
+    db   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
+    db 0Ch,0Ch,0Ch,0Ch,0Ch,0Ch,0Ch,0Ch,0Ch,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
+    db   0,  0,  0,0Ch,0Ch,0Ch,0Ch,0Ch,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
+    db   0,  0,  0,0Ch,0Ch,0Ch,  0,  0,  0,  0,0Fh,0Fh,0Fh,0Fh,0Fh,  0,  0,  0,  0,  0,  0,  0,  0,  0
+    db   0,  0,  0,  0,0Ch,0Ch,0Ch,0Fh,0Fh,0Fh,0Fh,0Fh,0Fh,0Fh,0Fh,0Fh,  0,  0,  0,  0,  0,  0,  0,  0
+    db   0,  0,  0,0Ch,0Ch,0Ch,0Fh,0Fh,0Fh,0Fh,0Fh,0Fh,0Ch,0Ch,0Fh,0Fh,0Fh,  0,  0,  0,  0,  0,  0,  0
+    db 0Ch,0Ch,0Ch,0Ch,0Ch,0Ch,0Ch,0Ch,0Ch,0Fh,0Fh,0Ch,0Ch,0Ch,0Ch,0Fh,0Fh,  0,  0,  0,  0,  0,  0,  0
+    db 0Ch,0Ch,0Ch,0Ch,0Ch,0Ch,0Ch,0Ch,0Ch,0Fh,0Fh,0Ch,0Ch,0Ch,0Ch,0Fh,0Fh,  0,  0,  0,  0,  0,  0,  0
+    db   0,  0,  0,0Ch,0Ch,0Ch,0Fh,0Fh,0Fh,0Fh,0Fh,0Fh,0Ch,0Ch,0Fh,0Fh,0Fh,  0,  0,  0,  0,  0,  0,  0
+    db   0,  0,  0,  0,0Ch,0Ch,0Ch,0Fh,0Fh,0Fh,0Fh,0Fh,0Fh,0Fh,0Fh,0Fh,  0,  0,  0,  0,  0,  0,  0,  0
+    db   0,  0,  0,0Ch,0Ch,0Ch,  0,  0,  0,  0,0Fh,0Fh,0Fh,0Fh,0Fh,  0,  0,  0,  0,  0,  0,  0,  0,  0
+    db   0,  0,  0,0Ch,0Ch,0Ch,0Ch,0Ch,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
+    db 0Ch,0Ch,0Ch,0Ch,0Ch,0Ch,0Ch,0Ch,0Ch,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
+    db   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
+    db   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
 
-; ------------------------------------
+; -----------------------------------
 
 .code  
 

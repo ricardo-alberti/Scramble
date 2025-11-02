@@ -5,9 +5,9 @@ UPDATE_GAME proc
 
     mov al, menu_active
     cmp al, 1
-    je MENU_LOOP
+    je MENU_DRAW
 
-    MENU_LOOP:
+    MENU_DRAW:
         mov bl, 2 ; color 
         mov dh, 0 ; line 
         mov dl, 0 ; column 
@@ -18,6 +18,7 @@ UPDATE_GAME proc
         mov dh, 16 ; line 
         mov dl, 18 ; column 
         mov bp, offset start 
+
         call PRINT_STR
 
         mov bl, 15 ; color 
@@ -25,6 +26,13 @@ UPDATE_GAME proc
         mov dl, 18 ; column 
         mov bp, offset exit 
         call PRINT_STR
+
+    MENU_ANIMATION:
+        mov si, offset jet
+        mov bh, 0
+        mov bl, 0
+        call DRAW_SPRITE
+
 
     ; TODO: game logic
 
