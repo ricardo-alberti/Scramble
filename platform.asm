@@ -5,6 +5,8 @@
 ; - Custom interruptions
 ; - File I/O
 
+;CLEAR_SPRITE proc
+
 ; fill screen with black 
 CLEAR_SCREEN proc
     push ax
@@ -15,7 +17,7 @@ CLEAR_SCREEN proc
     mov es, ax
     xor di, di        ; start at beginning of video memory
     xor al, al        ; color 0 (black)
-    mov al, 7
+    ;mov al, 7
     mov cx, 64000     ; 320 * 200 = 64,000 pixels
     rep stosb
     
@@ -88,7 +90,7 @@ INIT_WINDOW endp
 
 ; Input:
 ; BL = color
-; DH = row
+; DH = row (text lines)
 ; DL = column
 ; BP = string address
 PRINT_STR proc
