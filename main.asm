@@ -13,6 +13,19 @@ SPRITE_WIDTH  equ 24
 SPRITE_HEIGHT equ 16
 SCREEN_WIDTH  equ 320
 SCREEN_HEIGHT equ 200
+MAX_ELEMENTS  equ 10
+
+; flags 
+DOWN          equ 1000b
+UP            equ 0100b
+LEFT          equ 0010b
+RIGHT         equ 0001b
+
+; keys
+KEY_DOWN      equ 's'
+KEY_UP        equ 'w'
+KEY_LEFT      equ 'a'
+KEY_RIGHT     equ 'd'
 
 ; ------------------------------------
 
@@ -34,66 +47,20 @@ scramble_title db "    ___                    _    _      ", CR, LF
 menu_active db 1
 exit_game db 0
 
-pos_x dw 20 DUP(10)            ; position of elements
-pos_y db 20 DUP(10)            ; position of elements
-active_count db 1 DUP(1)       ; active elements
+pos_x_high dw MAX_ELEMENTS DUP(10)         ; position of elements
+pos_x_low dw MAX_ELEMENTS DUP(0)          
+pos_y_high dw MAX_ELEMENTS DUP(10)         
+pos_y_low dw MAX_ELEMENTS DUP(0)          
+;active_count db 1 DUP(1)        ; active elements
+
+direction db MAX_ELEMENTS DUP(0001b)
+speed_high dw 0
+speed_low dw 10000   ; 20000/65535
 
 ; ------------------------------------
 
 ; sprites ----------------------------
-
-; Todo: make the sprites look good
-meteor db   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
-       db   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
-       db   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
-       db   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
-       db   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,0Ch,0Ch,0Ch,0Ch,0Ch,  0,  0,  0,  0,  0,  0,  0,  0,  0
-       db   0,  0,  0,  0,  0,  0,  0,  0,  0,0Ch,0Ch,0Eh,0Ch,0Ch,0Ch,0Ch,  0,  0,  0,  0,0Ch,  0,  0,  0
-       db   0,  0,  0,  0,  0,  0,  0,  0,0Ch,0Ch,0Eh,0Eh,0Eh,0Eh,0Ch,0Ch,0Ch,0Ch,  0,  0,  0,  0,  0,  0
-       db   0,  0,  0,  0,  0,  0,  0,  0,0Ch,0Eh,0Eh,0Eh,0Eh,0Ch,0Ch,0Ch,0Ch,  0,  0,0Ch,  0,  0,0Ch,  0
-       db   0,  0,  0,  0,  0,  0,  0,  0,0Ch,0Eh,0Eh,0Eh,0Eh,0Ch,0Ch,0Ch,0Ch,  0,  0,  0,  0,  0,  0,  0
-       db   0,  0,  0,  0,  0,  0,  0,  0,0Ch,0Ch,0Eh,0Eh,0Eh,0Eh,0Ch,0Ch,0Ch,  0,0Ch,  0,  0,  0,  0,  0
-       db   0,  0,  0,  0,  0,  0,  0,  0,  0,0Ch,0Ch,0Eh,0Ch,0Eh,0Ch,0Ch,  0,  0,  0,  0,  0,  0,  0,  0
-       db   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,0Ch,0Ch,0Ch,0Ch,0Ch,  0,  0,  0,  0,  0,  0,  0,  0,  0
-       db   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
-       db   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
-       db   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
-       db   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
-
-alien db   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
-      db   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
-      db   0,  0,  0,  0,  0,  0,  0,  0,  0,0Ah,  0,  0,  0,  0,0Ah,  0,  0,  0,  0,  0,  0,  0,  0,  0
-      db   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,0Ah,  0,  0,0Ah,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
-      db   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,0Ah,0Ah,0Ah,0Ah,0Ah,  0,  0,  0,  0,  0,  0,  0,  0,  0
-      db   0,  0,  0,  0,  0,  0,  0,  0,  0,0Ah,0Ah,0Ah,0Ah,0Ah,0Ah,0Ah,  0,  0,  0,  0,  0,  0,  0,  0
-      db   0,  0,  0,  0,  0,  0,  0,  0,0Ah,0Ah,0Ch,0Ah,0Ah,0Ah,0Ch,0Ah,0Ah,  0,  0,  0,  0,  0,  0,  0
-      db   0,  0,  0,  0,  0,  0,0Ah,0Ah,0Ah,0Ah,0Ch,0Ch,0Ah,0Ch,0Ch,0Ah,0Ah,0Ah,0Ah,  0,  0,  0,  0,  0
-      db   0,  0,  0,  0,  0,  0,  0,  0,0Ah,0Ah,0Ah,0Ah,0Ah,0Ah,0Ah,0Ah,0Ah,  0,  0,  0,  0,  0,  0,  0
-      db   0,  0,  0,  0,  0,  0,  0,  0,0Ah,0Ah,0Ah,0Ah,0Ah,0Ah,0Ah,0Ah,0Ah,  0,  0,  0,  0,  0,  0,  0
-      db   0,  0,  0,  0,  0,  0,  0,  0,  0,0Ah,0Ah,0Ah,0Ah,0Ah,0Ah,0Ah,  0,  0,  0,  0,  0,  0,  0,  0
-      db   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,0Ah,0Ah,0Ah,0Ah,0Ah,  0,  0,  0,  0,  0,  0,  0,  0,  0
-      db   0,  0,  0,  0,  0,  0,  0,  0,  0,0Ah,  0,  0,0Ah,  0,0Ah,  0,  0,  0,  0,  0,  0,  0,  0,  0
-      db   0,  0,  0,  0,  0,  0,  0,  0,0Ah,  0,  0,  0,0Ah,  0,  0,0Ah,  0,  0,  0,  0,  0,  0,  0,  0
-      db   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
-      db   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
-
-jet db   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
-    db   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
-    db   0,0Ch,0Ch,0Ch,0Ch,0Ch,0Ch,0Ch,0Ch,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
-    db   0,  0,  0,0Ch,0Ch,0Ch,0Ch,0Ch,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
-    db   0,  0,  0,0Ch,0Ch,0Ch,  0,  0,  0,  0,0Fh,0Fh,0Fh,0Fh,0Fh,  0,  0,  0,  0,  0,  0,  0,  0,  0
-    db   0,  0,  0,  0,0Ch,0Ch,0Ch,0Fh,0Fh,0Fh,0Fh,0Fh,0Fh,0Fh,0Fh,0Fh,  0,  0,  0,  0,  0,  0,  0,  0
-    db   0,  0,  0,0Ch,0Ch,0Ch,0Fh,0Fh,0Fh,0Fh,0Fh,0Fh,0Ch,0Ch,0Fh,0Fh,0Fh,  0,  0,  0,  0,  0,  0,  0
-    db   0,0Ch,0Ch,0Ch,0Ch,0Ch,0Ch,0Ch,0Ch,0Fh,0Fh,0Ch,0Ch,0Ch,0Ch,0Fh,0Fh,  0,  0,  0,  0,  0,  0,  0
-    db   0,0Ch,0Ch,0Ch,0Ch,0Ch,0Ch,0Ch,0Ch,0Fh,0Fh,0Ch,0Ch,0Ch,0Ch,0Fh,0Fh,  0,  0,  0,  0,  0,  0,  0
-    db   0,  0,  0,0Ch,0Ch,0Ch,0Fh,0Fh,0Fh,0Fh,0Fh,0Fh,0Ch,0Ch,0Fh,0Fh,0Fh,  0,  0,  0,  0,  0,  0,  0
-    db   0,  0,  0,  0,0Ch,0Ch,0Ch,0Fh,0Fh,0Fh,0Fh,0Fh,0Fh,0Fh,0Fh,0Fh,  0,  0,  0,  0,  0,  0,  0,  0
-    db   0,  0,  0,0Ch,0Ch,0Ch,  0,  0,  0,  0,0Fh,0Fh,0Fh,0Fh,0Fh,  0,  0,  0,  0,  0,  0,  0,  0,  0
-    db   0,  0,  0,0Ch,0Ch,0Ch,0Ch,0Ch,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
-    db   0,0Ch,0Ch,0Ch,0Ch,0Ch,0Ch,0Ch,0Ch,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
-    db   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
-    db   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
-
+INCLUDE sprites.asm
 ; -----------------------------------
 
 .code  
@@ -108,19 +75,14 @@ MAIN:
     mov es, ax
 
     call INIT_WINDOW
-    call CLEAR_SCREEN
-    
+
     MAIN_LOOP:
         call UPDATE_GAME
 
-        ; TODO: 
-        ; - create proc to get input of a exit key
-        ; - exit MAIN_LOOP if key is pressed
         mov al, exit_game
         cmp al, 1
         je EXIT_LOOP
         jmp MAIN_LOOP
-
     EXIT_LOOP:
         mov ah, 4Ch
         int 21h
