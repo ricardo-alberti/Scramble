@@ -1,11 +1,152 @@
 ; platform.asm
-; - User Input functions
-; - Video Output
-; - Sound Output
-; - Custom interruptions
 
 ; resets variables
 ; RESET_GAME
+
+; Input:
+; dh = line
+; dl = column
+; bl = color
+; bp = str offset
+DRAW_BUTTON proc
+    push dx
+
+    ; draw rec
+    sub dh, 1  ; line 
+    sub dl, 2  ; column 
+    call DRAW_REC
+
+    ; write str
+    pop dx
+    call PRINT_STR
+
+    ret
+DRAW_BUTTON endp 
+
+; draw fixed width rectangle
+; Input:
+; BL = color
+; DH = line
+; DL = column
+DRAW_REC PROC
+    push ax
+    push cx
+    push dx
+    
+    ; ┌
+    xor BH, BH
+    call SET_POS_CURSOR
+    mov AL, 218     
+    mov CX, 1
+    mov AH, 0AH
+    int 10h
+    
+    ; ──────── 
+    inc DL
+    call SET_POS_CURSOR
+    mov AL, 196
+    mov CX, 7
+    mov AH, 0AH
+    int 10h
+    
+    ; ┐
+    add DL, CL
+    call SET_POS_CURSOR
+    mov AL, 191 
+    mov CX, 1
+    mov AH, 0AH
+    int 10h
+    
+    ; │ (right)
+    inc DH
+    call SET_POS_CURSOR
+    mov AL, 179 
+    mov CX, 1
+    mov AH, 0AH
+    int 10h
+    
+    ; ┘
+    inc DH
+    call SET_POS_CURSOR
+    mov AL, 217
+    mov CX, 1
+    mov AH, 0AH
+    int 10h
+    
+    ; ──────── (bottom)
+    mov CX, 8
+    sub DL, CL
+    call SET_POS_CURSOR
+    mov AL, 196  
+    mov AH, 0AH
+    int 10h
+
+    ; └
+    mov CX, 1
+    mov AL, 192  
+    mov AH, 0AH
+    int 10h
+
+    ; | (left)
+    dec DH
+    call SET_POS_CURSOR
+    mov CX, 1
+    mov AL, 179  
+    mov AH, 0AH
+    int 10h
+    
+    pop dx
+    pop cx
+    pop ax
+    ret
+DRAW_REC endp
+
+; sets cursor position
+; Input:
+; BH = page number (0 for graphics modes)
+; DH = row
+; DL = column
+SET_POS_CURSOR proc
+    push ax
+    push bx
+    mov ah, 02h
+    int 10h
+    pop bx
+    pop ax
+    ret
+SET_POS_CURSOR endp
+
+; Input:
+; CX = high
+; DX = low
+; ex.:
+; CX = 1Eh
+; DX = 8480h
+; Delay = 2s
+DELAY proc
+    push ax
+
+    mov ah, 86h
+    int 15h
+
+    pop ax
+DELAY endp
+
+; Output:
+; AL = ASCII, AH = scan code
+GET_INPUT proc
+
+    mov ah, 01h
+    int 16h
+    jz NO_KEY     ; If no key, skip
+
+    mov ah, 00h
+    int 16h
+
+NO_KEY:
+    ret
+GET_INPUT endp
+
 
 ; fill screen with black 
 CLEAR_SCREEN proc
@@ -28,7 +169,7 @@ endp
 
 ; UPDATE_POS
 ; Input:
-;   SI = index (of object)
+; SI = index (of object)
 UPDATE_POS PROC
     push ax
     push bx
