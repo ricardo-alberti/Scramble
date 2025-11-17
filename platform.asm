@@ -23,7 +23,6 @@ DRAW_BUTTON proc
     ret
 DRAW_BUTTON endp 
 
-; draw fixed width rectangle
 ; Input:
 ; BL = color
 ; DH = line
@@ -101,6 +100,37 @@ DRAW_REC PROC
     ret
 DRAW_REC endp
 
+; Input: 
+; cx = y
+; bl = color
+FILL_REC proc
+    push ax
+    push cx
+    push dx
+    push di
+    
+    xor ax, ax    
+    mov ax, cx
+    mov dx, 320
+    mul dx
+    mov di, ax
+    mov dx, 64000
+    sub dx, ax
+
+    mov ax, VIDEO_SEG ; ES = 0A000h (video memory)
+    mov es, ax
+    mov al, bl
+    mov cx, dx ; 64,000 - cx * 320
+    rep stosb
+    
+    pop di
+    pop dx
+    pop cx
+    pop ax
+    ret
+FILL_REC endp
+
+
 ; sets cursor position
 ; Input:
 ; BH = page number (0 for graphics modes)
@@ -166,102 +196,6 @@ CLEAR_SCREEN proc
     pop ax
     ret
 endp
-
-; UPDATE_POS
-; Input:
-; SI = index (of object)
-UPDATE_POS PROC
-    push ax
-    push bx
-    push cx
-    push dx
-    push si
-    push di
-
-    ; Each position has low and high bytes stored in arrays:
-    ; pos_x_low[], pos_x_high[], pos_y_low[], pos_y_high[]
-
-    ; LOAD direction
-    mov bl, [direction + si]
-
-    mov cx, si               ; CX = index
-
-    ; HORIZONTAL
-    ; Load X position
-    mov si, offset pos_x_low
-    add si, cx
-    mov ax, [si]
-
-
-    mov di, offset pos_x_high
-    add di, cx
-    mov dx, [di]
-
-    ; Move right
-    test bl, RIGHT
-    jz CHECK_LEFT
-    add ax, [speed_low]
-    adc dx, [speed_high]
-    cmp dx, SCREEN_WIDTH
-    jb STORE_X               ; if < width, keep it
-    xor dx, dx               ; wrap to 0
-    jmp STORE_X
-
-CHECK_LEFT:
-    test bl, LEFT
-    jz STORE_X
-    sub ax, [speed_low]
-    sbb dx, [speed_high]
-    js WRAP_RIGHT            ; if negative
-    jmp STORE_X
-WRAP_RIGHT:
-    mov dx, SCREEN_WIDTH
-
-STORE_X:
-    mov [si], ax
-    mov [di], dx
-
-    ; VERTICAL
-    mov si, offset pos_y_low
-    add si, cx
-    mov ax, [si]
-
-    mov di, offset pos_y_high
-    add di, cx
-    mov dx, [di]
-
-    ; Move up
-    test bl, UP
-    jz CHECK_DOWN
-    sub ax, [speed_low]
-    sbb dx, [speed_high]
-    js WRAP_BOTTOM
-    jmp STORE_Y
-WRAP_BOTTOM:
-    mov dx, SCREEN_HEIGHT
-    jmp STORE_Y
-
-CHECK_DOWN:
-    test bl, DOWN
-    jz STORE_Y
-    add ax, [speed_low]
-    adc dx, [speed_high]
-    cmp dx, SCREEN_HEIGHT
-    jb STORE_Y
-    xor dx, dx               ; wrap to 0
-
-STORE_Y:
-    mov [si], ax
-    mov [di], dx
-
-    pop di
-    pop si
-    pop dx
-    pop cx
-    pop bx
-    pop ax
-    ret
-UPDATE_POS endp
 
 ; Input:
 ; bx = x
@@ -384,3 +318,48 @@ done:
     pop ax
     ret
 GET_STR_SIZE endp
+
+
+;------------------------------------------------------------
+; Escreve na tela um caractere armazenado em DL
+;------------------------------------------------------------
+ESC_CHAR proc
+    push AX            ; salvar AX
+    mov  AH, 2
+    int  21H
+    pop  AX            ; restaurar AX
+    ret
+endp
+
+;------------------------------------------------------------
+; Escreve um inteiro sem sinal de 16 bits armazenado em AX
+;------------------------------------------------------------
+ESC_UINT16 proc
+    push AX            ; salvar registradores
+    push BX
+    push CX
+    push DX
+
+    mov  BX, 10        ; divisor = 10
+    xor  CX, CX        ; contador de dígitos
+
+LACO_DIV:
+    xor  DX, DX        ; limpar DX
+    div  BX            ; DX:AX / BX → quociente em AX, resto em DX
+    push DX            ; guardar o dígito
+    inc  CX            ; contador++
+    cmp  AX, 0
+    jnz  LACO_DIV      ; repete até AX = 0
+
+LACO_ESCDIG:
+    pop  DX            ; recuperar dígito
+    add  DL, '0'       ; converter para ASCII
+    call ESC_CHAR
+    loop LACO_ESCDIG   ; até CX = 0
+
+    pop  DX            ; restaurar registradores
+    pop  CX
+    pop  BX
+    pop  AX
+    ret
+endp
