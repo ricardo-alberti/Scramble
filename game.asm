@@ -2,62 +2,32 @@
 
 ; status HUD
 INCLUDE status.asm
+INCLUDE sectors.asm
 
 DRAW_GAME proc
 
-; -----------------------
-; INITIALIZE_SECTORS
-; -----------------------
-SETUP_SECTOR_ONE:
-    mov bp, offset sector1
-    call PRINT_PHASE
-    mov [speed_low], 6000
-    mov [active_count], 3
-    mov [obstacle_str_offset], offset meteor
-
-    ; status bar
-    call SETUP_STATUS_BAR
-
-    ; jet
-    mov [direction], RIGHT
-    mov [pos_y_high], 100 ; middle screen_height
-
-    ; planet
-    mov cx, 180 ; y
-    mov bl, 6   ; color
-    call FILL_REC
-
-    ; meteor
-    mov si, 2 ; offset
-    mov [pos_y_high + si], 76 ; y
-    mov [direction + si], LEFT    ; move left
-
-    add si, 2 ; offset
-    mov [pos_y_high + si], 90 ; y
-    mov [direction + si], LEFT    ; move left
-
-    jmp SECTOR_LOOP
-
-SETUP_SECTOR_TWO:
-    mov bp, offset sector2
-    call PRINT_PHASE
-
-    jmp SECTOR_LOOP
-
-SETUP_SECTOR_THREE:
-    mov bp, offset sector3
-    call PRINT_PHASE
-
-    jmp SECTOR_LOOP
-
+SET_SECTOR:
+    mov di, [current_sector]
+    add di, 2
+    cmp di, 6 ; won last level
+    je EXIT_UPD_GAME
+    mov [current_sector], di
+    mov bx, [sectors + di]
+    call bx
 
 ; -----------------------
 ; UPDATE_GAME
 ; -----------------------
 SECTOR_LOOP:
-    call RESOLVE_INPUT
+    call RESOLVE_INPUT ; when I comment this it works
+    call UPDATE_TIMER
 
-    ;call UPDATE_STATUS_BAR
+    ; if timer 0 go to next sector
+    push ax
+    mov ax, [current_timer]
+    cmp ax, 0
+    je SET_SECTOR
+    pop ax
 
     ; update positions and draw elements
     xor si, si
@@ -85,24 +55,21 @@ DRAW:
     call UPDATE_POS
     add si, 2
     loop UPD_ELEMENTS
-     
+
     jmp SECTOR_LOOP
+; -----------------------
 
 EXIT_UPD_GAME:
+    mov [current_sector], FIRST_SECTOR
     ret
 DRAW_GAME endp
-
-
 
 
 ; maps user input to game actions
 RESOLVE_INPUT proc
     call GET_INPUT
     jnz CHECK_KEY_RIGHT  
-    ; if no key pressed
-    ;mov [shooting], 0 
-    ;mov al, IDLE    
-    jmp RESOLVE
+    jmp NO_INPUT
 
 CHECK_KEY_RIGHT:
     xor al, al 
@@ -125,12 +92,15 @@ CHECK_KEY_SPACE:
     cmp ah, KEY_SPACE
     jnz RESOLVE
     mov [shooting], 1 ; sets to shoot
+    jmp RESOLVE
+NO_INPUT:
+    ;xor ax, ax
+    mov [shooting], 0 ; sets to shoot
 
 RESOLVE:
     mov [direction], al ; change jet direction
     ret
 RESOLVE_INPUT endp
-
 
 ; Input:
 ; SI = index (of object)

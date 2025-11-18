@@ -36,6 +36,7 @@ DRAW_BUTTONS:
     call DRAW_BUTTON
 
     ; animate_menu_loop
+    mov [speed_low], 10000
 ANIMATE_MENU:
     ; alien
     mov si, 4

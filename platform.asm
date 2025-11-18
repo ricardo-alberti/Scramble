@@ -1,7 +1,52 @@
 ; platform.asm
 
-; resets variables
-; RESET_GAME
+; INT 1A,2 - Read Time From Real Time Clock
+; Output:
+; CF = 0 if successful
+;    = 1 if error, RTC not operating
+; CH = hours in BCD
+; CL = minutes in BCD
+; DH = seconds in BCD
+; DL = 1 if daylight savings time option
+READ_RTC proc
+    push ax
+    push cx
+    mov ah, 02h         ; only return dx for now
+    int 1Ah
+    pop ax
+    pop cx
+    ret
+READ_RTC endp
+
+; Input:
+; BX = limit
+; Ouput:
+; AX = random value
+GET_RANDOM_VALUE proc
+    push BX
+    push CX
+    push DX
+    
+    ; retrieves DOS maintained clock time
+	; CH = hour (0-23)
+	; CL = minutes (0-59)
+	; DH = seconds (0-59)
+	; DL = hundredths (0-99)
+    mov ah, 2Ch 
+    int 21h 
+    
+    mov AX, DX
+    xor DX, DX
+    
+    div BX
+    
+    mov AX, DX
+    
+    pop DX
+    pop CX
+    pop BX
+    ret
+endp
 
 ; Input:
 ; dh = line
@@ -139,6 +184,7 @@ FILL_REC endp
 SET_POS_CURSOR proc
     push ax
     push bx
+    mov bh, 0
     mov ah, 02h
     int 10h
     pop bx
@@ -319,47 +365,44 @@ done:
     ret
 GET_STR_SIZE endp
 
-
 ;------------------------------------------------------------
-; Escreve na tela um caractere armazenado em DL
-;------------------------------------------------------------
-ESC_CHAR proc
-    push AX            ; salvar AX
-    mov  AH, 2
-    int  21H
-    pop  AX            ; restaurar AX
-    ret
-endp
-
-;------------------------------------------------------------
-; Escreve um inteiro sem sinal de 16 bits armazenado em AX
+; ESC_UINT16
+; Escreve AX como número decimal na posição atual do cursor
 ;------------------------------------------------------------
 ESC_UINT16 proc
-    push AX            ; salvar registradores
-    push BX
-    push CX
-    push DX
+    push ax
+    push bx
+    push cx
+    push dx
 
-    mov  BX, 10        ; divisor = 10
-    xor  CX, CX        ; contador de dígitos
+    mov bx, 10
+    xor cx, cx        ; contador de dígitos
 
-LACO_DIV:
-    xor  DX, DX        ; limpar DX
-    div  BX            ; DX:AX / BX → quociente em AX, resto em DX
-    push DX            ; guardar o dígito
-    inc  CX            ; contador++
-    cmp  AX, 0
-    jnz  LACO_DIV      ; repete até AX = 0
+;--- converte número empilhando dígitos ---
+conv_loop:
+    xor dx, dx
+    div bx            ; AX / 10 → quociente em AX, resto em DX
+    push dx           ; empilha o dígito
+    inc cx
+    test ax, ax
+    jnz conv_loop
 
-LACO_ESCDIG:
-    pop  DX            ; recuperar dígito
-    add  DL, '0'       ; converter para ASCII
-    call ESC_CHAR
-    loop LACO_ESCDIG   ; até CX = 0
+;--- imprime os dígitos desempilhando ---
+print_loop:
+    pop dx
+    add dl, '0'       ; converte para ASCII
 
-    pop  DX            ; restaurar registradores
-    pop  CX
-    pop  BX
-    pop  AX
+    mov ah, 0Eh       ; teletype BIOS
+    mov al, dl
+    mov bh, 0         ; página
+    mov bl, 02h         ; cor branca
+    int 10h
+
+    loop print_loop
+
+    pop dx
+    pop cx
+    pop bx
+    pop ax
     ret
 endp
