@@ -66,9 +66,10 @@ pos_y_high dw MAX_ELEMENTS DUP(0)
 pos_y_low dw MAX_ELEMENTS DUP(0)          
 
 active_count dw 0     ; elements to draw/update
+lives dw 2
+shooting db 1
 
 direction db MAX_ELEMENTS DUP(IDLE)
-shooting db 0
 speed_high dw 0
 speed_low dw 0   ; x/65535
 

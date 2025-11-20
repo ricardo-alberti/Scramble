@@ -17,20 +17,16 @@ SETUP_STATUS_BAR proc
     call PRINT_STR
 
     ; lives
+    mov cx, [lives]
     mov bx, 110
-    mov cx, 0
-    mov si, offset jet
-    call DRAW_SPRITE
-
+DRAW_LIFE: 
+    push cx
     add bx, 24
     mov cx, 0
     mov si, offset jet
     call DRAW_SPRITE
-
-    add bx, 24
-    mov cx, 0
-    mov si, offset jet
-    call DRAW_SPRITE
+    pop cx
+    loop DRAW_LIFE
 
     ret
 SETUP_STATUS_BAR endp
