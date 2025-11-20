@@ -6,11 +6,11 @@ INCLUDE sectors.asm
 
 DRAW_GAME proc
 
-SET_SECTOR:
+NEXT_SECTOR:
     mov di, [current_sector]
-    add di, 2
-    cmp di, 6 ; won last level
+    cmp di, 4
     je EXIT_UPD_GAME
+    add di, 2
     mov [current_sector], di
     mov bx, [sectors + di]
     call bx
@@ -26,7 +26,7 @@ SECTOR_LOOP:
     push ax
     mov ax, [current_timer]
     cmp ax, 0
-    je SET_SECTOR
+    je NEXT_SECTOR
     pop ax
 
     ; update positions and draw elements
@@ -60,7 +60,6 @@ DRAW:
 ; -----------------------
 
 EXIT_UPD_GAME:
-    mov [current_sector], FIRST_SECTOR
     ret
 DRAW_GAME endp
 
@@ -137,12 +136,24 @@ CHECK_RIGHT:
     jz CHECK_LEFT
     add ax, [speed_low]
     adc dx, [speed_high]
-    cmp dx, SCREEN_WIDTH
-    jb STORE_X               ; if < width, keep it
+    cmp dx, SCREEN_WIDTH - SPRITE_WIDTH
+    jae BLOCK_RIGHT
+    jmp STORE_X
 WRAP_LEFT:
+    pop ax
+    cmp dx, SCREEN_WIDTH
+    jb STORE_X
     xor dx, dx               ; wrap to 0
     jmp STORE_X
-
+BLOCK_RIGHT:
+    push ax
+    mov ax, [wrap_screen] 
+    cmp ax, cx
+    jne WRAP_LEFT
+    pop ax
+    mov dx, SCREEN_WIDTH - SPRITE_WIDTH
+    jmp STORE_X
+    
 CHECK_LEFT:
     test bl, LEFT
     jz STORE_X
@@ -151,7 +162,17 @@ CHECK_LEFT:
     js WRAP_RIGHT            ; if negative
     jmp STORE_X
 WRAP_RIGHT:
+    push ax
+    mov ax, [wrap_screen]
+    cmp ax, cx
+    je BLOCK_LEFT
+    pop ax
     mov dx, SCREEN_WIDTH
+    jmp STORE_X
+BLOCK_LEFT:
+    pop ax
+    xor dx, dx
+    jmp STORE_X
 
 STORE_X:
     mov [si], ax
@@ -171,11 +192,11 @@ CHECK_UP:
     jz CHECK_DOWN
     sub ax, [speed_low]
     sbb dx, [speed_high]
-    cmp dx, 0
+    cmp dx, SCREEN_TOP_LIMIT
     js BLOCK_UP
     jmp STORE_Y
 BLOCK_UP:
-    mov dx, 0
+    mov dx, SCREEN_TOP_LIMIT
     jmp STORE_Y
 
 CHECK_DOWN:

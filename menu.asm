@@ -10,6 +10,8 @@ DRAW_MENU proc
 
     call CLEAR_SCREEN
 
+    mov [wrap_screen], 1   ; elements wrap screen
+
     ; title
     mov bl, 0Ah ; color 
     mov dh, 0   ; line 

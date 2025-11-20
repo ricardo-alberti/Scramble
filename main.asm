@@ -10,8 +10,8 @@ INCLUDE sprites.asm
 
 ; constants --------------------------
 
-CR            equ 13       ; carriage return
-LF            equ 10       ; line feed
+CR            equ 13       ; carriage return \r
+LF            equ 10       ; line feed \n
 VIDEO_SEG     equ 0A000h   ; video segment start
 
 SCREEN_WIDTH  equ 320
@@ -24,6 +24,10 @@ BLOCK_HEIGHT  equ 16
 MAX_ELEMENTS  equ 10
 SECTOR_TIME   equ 60
 FIRST_SECTOR  equ -2
+
+SCREEN_TOP_LIMIT equ 20   ; limit movement
+JET_OFFSET       equ 0    ; START POSITION = JET
+OBSTACLE_OFFSET  equ 2    ; METEOR OR ALIEN
 
 ; movement flags 
 DOWN          equ 1000b
@@ -52,17 +56,15 @@ obstacle_str_offset dw 0                  ; sets which obstacle to draw
 current_rtc db 0                          ; BIOS real time clock passed
 current_timer dw SECTOR_TIME              ; game timer 60s
 
-
 current_sector dw FIRST_SECTOR
 sectors dw offset START_SECTOR_ONE, offset START_SECTOR_TWO, offset START_SECTOR_THREE
             
+wrap_screen dw 0
 pos_x_high dw MAX_ELEMENTS DUP(0)         ; position of elements
 pos_x_low dw MAX_ELEMENTS DUP(0)          
 pos_y_high dw MAX_ELEMENTS DUP(0)         
 pos_y_low dw MAX_ELEMENTS DUP(0)          
 
-jet_offset db 0       ; start position = jet
-obstacle_offset dw 2  ; meteor or alien
 active_count dw 0     ; elements to draw/update
 
 direction db MAX_ELEMENTS DUP(IDLE)
