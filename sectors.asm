@@ -16,6 +16,7 @@ START_SECTOR_ONE proc
     mov [obstacle_str_offset], offset meteor
     mov [current_timer], SECTOR_TIME
     mov [wrap_screen], 0
+    mov [sector_bonus_points], 10
 
     ; status bar
     call SETUP_STATUS_BAR
@@ -57,6 +58,7 @@ START_SECTOR_TWO proc
     mov [active_count], 2
     mov [obstacle_str_offset], offset alien
     mov [current_timer], SECTOR_TIME
+    mov [sector_bonus_points], 15
 
     ; status bar
     call SETUP_STATUS_BAR
@@ -100,6 +102,7 @@ START_SECTOR_THREE proc
     mov [obstacle_str_offset], offset meteor
     mov [current_timer], SECTOR_TIME
     mov [current_sector], FIRST_SECTOR
+    mov [sector_bonus_points], 20
 
     ; status bar
     call SETUP_STATUS_BAR

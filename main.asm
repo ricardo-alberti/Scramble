@@ -22,7 +22,7 @@ SPRITE_HEIGHT equ 13
 BLOCK_WIDTH   equ 24
 BLOCK_HEIGHT  equ 16
 MAX_ELEMENTS  equ 10
-SECTOR_TIME   equ 60
+SECTOR_TIME   equ 5
 FIRST_SECTOR  equ -2
 
 SCREEN_TOP_LIMIT equ 20   ; limit movement
@@ -58,6 +58,7 @@ current_timer dw SECTOR_TIME              ; game timer 60s
 
 current_sector dw FIRST_SECTOR
 sectors dw offset START_SECTOR_ONE, offset START_SECTOR_TWO, offset START_SECTOR_THREE
+sector_bonus_points dw 0
             
 wrap_screen dw 0
 pos_x_high dw MAX_ELEMENTS DUP(0)         ; position of elements
@@ -65,8 +66,9 @@ pos_x_low dw MAX_ELEMENTS DUP(0)
 pos_y_high dw MAX_ELEMENTS DUP(0)         
 pos_y_low dw MAX_ELEMENTS DUP(0)          
 
+score_points dw 0
 active_count dw 0     ; elements to draw/update
-lives dw 2
+lives dw 3
 shooting db 1
 
 direction db MAX_ELEMENTS DUP(IDLE)
@@ -84,7 +86,9 @@ sector1 db "SETOR - 1$"
 sector2 db "SETOR - 2$"
 sector3 db "SETOR - 3$"
 score db "Score: $"
+score_foreground db "00000$"
 timer db "Tempo: $"
+
 
 scramble_title db "    ___                    _    _      ", CR, LF
                db "   / __| __ _ _ __ _ _ __ | |__| |___  ", CR, LF

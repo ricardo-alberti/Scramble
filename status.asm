@@ -21,10 +21,10 @@ SETUP_STATUS_BAR proc
     mov bx, 110
 DRAW_LIFE: 
     push cx
-    add bx, 24
     mov cx, 0
     mov si, offset jet
     call DRAW_SPRITE
+    add bx, 24
     pop cx
     loop DRAW_LIFE
 
@@ -46,7 +46,7 @@ DEC_TIMER:
     dec ax
     mov [current_timer], ax
 
-REDRAW_TIMER:
+    REDRAW_TIMER:
     mov dh, 0
     mov dl, 38
     call SET_POS_CURSOR
@@ -64,6 +64,9 @@ REDRAW_TIMER:
     call SET_POS_CURSOR
     call ESC_UINT16
 
+    mov ax, [sector_bonus_points]
+    call UPDATE_SCORE
+
 EXIT_TIMER:
     pop dx
     pop ax
@@ -71,9 +74,59 @@ EXIT_TIMER:
 UPDATE_TIMER endp
 
 UPDATE_LIVES proc
+    push bx
+    push cx
+    push si
+
+    mov bx, 110
+    mov cx, 0
+    mov si, offset empty_sprite
+    call DRAW_SPRITE
+    add bx, 24
+    call DRAW_SPRITE
+    add bx, 24
+    call DRAW_SPRITE
+
+    ; dec lives
+    mov cx, [lives]
+    cmp cx, 1
+    jbe EXIT_UPD_LIVES
+    dec cx
+    mov [lives], cx
+    mov bx, 110
+DRAW_PLAYER_LIFE: 
+    push cx
+    mov cx, 0
+    mov si, offset jet
+    call DRAW_SPRITE
+    add bx, 24
+    pop cx
+    loop DRAW_PLAYER_LIFE
+
+EXIT_UPD_LIVES:
+    pop si
+    pop cx
+    pop bx
     ret
 UPDATE_LIVES endp
 
+; Input:
+; ax = score gain
 UPDATE_SCORE proc
+    mov bl, 02h ; color
+    mov dh, 0   ; row
+    mov dl, 7   ; column
+    mov bp, offset score_foreground
+    call PRINT_STR 
+
+    mov dh, 0  ; row
+    mov dl, 10 ; column
+    call SET_POS_CURSOR
+
+    mov bx, [score_points]
+    add ax, bx
+    mov [score_points], ax
+    call ESC_UINT16
+
     ret
 UPDATE_SCORE endp
