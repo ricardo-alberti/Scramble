@@ -22,7 +22,7 @@ SPRITE_HEIGHT equ 13
 BLOCK_WIDTH   equ 24
 BLOCK_HEIGHT  equ 16
 MAX_ELEMENTS  equ 10
-SECTOR_TIME   equ 5
+SECTOR_TIME   equ 10
 FIRST_SECTOR  equ -2
 
 SCREEN_TOP_LIMIT equ 20   ; limit movement
@@ -66,6 +66,7 @@ pos_x_low dw MAX_ELEMENTS DUP(0)
 pos_y_high dw MAX_ELEMENTS DUP(0)         
 pos_y_low dw MAX_ELEMENTS DUP(0)          
 
+str_int_color db 02h
 score_points dw 0
 active_count dw 0     ; elements to draw/update
 lives dw 3
@@ -95,15 +96,18 @@ scramble_title db "    ___                    _    _      ", CR, LF
                db "   \__ \/ _| '_/ _` | '  \| '_ \ / -_) ", CR, LF
                db "   |___/\__|_| \__,_|_|_|_|_.__/_\___| $", CR, LF
 
-winner db "__   __                  _          ", CR, LF
-       db "\ \ / /__ _ _  __ ___ __| |___ _ _  ", CR, LF
-       db " \ V / -_) ' \/ _/ -_) _` / _ \ '_| ", CR, LF
-       db "  \_/\___|_||_\__\___\__,_\___/_|  $", CR, LF
+winner db " __   __                  _          _ ", CR, LF
+       db " \ \ / /__ _ _  __ ___ __| |___ _ _ | |", CR, LF
+       db "  \ V / -_) ' \/ _/ -_) _` / _ \ '_||_|", CR, LF
+       db "   \_/\___|_||_\__\___\__,_\___/_|  (_)$", CR, LF
 
-game_over db "  ___                   ___               ", CR, LF
-          db " / __|__ _ _ __  ___   / _ \__ _____ _ _  ", CR, LF
-          db "| (_ / _` | '  \/ -_) | (_) \ V / -_) '_| ", CR, LF
-          db " \___\__,_|_|_|_\___|  \___/ \_/\___|_|  $", CR, LF
+game_over db "            ___                        ", CR, LF
+          db "           / __|__ _ _ __  ___         ", CR, LF
+          db "          | (_ / _` | '  \/ -_)        ", CR, LF
+          db "           \___\__,_|_|_|_\___|        ", CR, LF
+          db "           / _ \__ _____ _ _           ", CR, LF
+          db "          | (_) \ V / -_) '_|          ", CR, LF
+          db "           \___/ \_/\___|_|           $", CR, LF
 
 ; ------------------------------------
 
@@ -124,7 +128,7 @@ MAIN:
     MAIN_LOOP:
         mov al, [menu_active]
         cmp al, 1
-        jz OPEN_MENU
+        je OPEN_MENU
 
     START_GAME:
         call DRAW_GAME
@@ -132,7 +136,7 @@ MAIN:
     OPEN_MENU:
         call DRAW_MENU
 
-        mov al, exit_game
+        mov al, [exit_game]
         cmp al, 1
         je EXIT_LOOP
         jmp MAIN_LOOP

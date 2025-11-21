@@ -395,7 +395,7 @@ print_loop:
     mov ah, 0Eh       ; teletype BIOS
     mov al, dl
     mov bh, 0         ; página
-    mov bl, 02h         ; cor branca
+    mov bl, [str_int_color]
     int 10h
 
     loop print_loop

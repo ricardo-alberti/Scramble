@@ -9,7 +9,7 @@ DRAW_GAME proc
 NEXT_SECTOR:
     mov di, [current_sector]
     cmp di, 4
-    je EXIT_UPD_GAME
+    je END_WINNER
     add di, 2
     mov [current_sector], di
     mov bx, [sectors + di]
@@ -19,15 +19,17 @@ NEXT_SECTOR:
 ; UPDATE_GAME
 ; -----------------------
 SECTOR_LOOP:
-    call RESOLVE_INPUT ; when I comment this it works
+    call RESOLVE_INPUT
     call UPDATE_TIMER
 
+    mov bx, [lives]
+    cmp bx, 0
+    je END_GAME_OVER
     ; if timer 0 go to next sector
-    push ax
-    mov ax, [current_timer]
-    cmp ax, 0
+
+    mov bx, [current_timer]
+    cmp bx, 0
     je NEXT_SECTOR
-    pop ax
 
     ; update positions and draw elements
     xor si, si
@@ -59,6 +61,14 @@ DRAW:
     jmp SECTOR_LOOP
 ; -----------------------
 
+END_WINNER:
+    mov ax, 1
+    call END_SCREEN
+    jmp EXIT_UPD_GAME
+END_GAME_OVER:
+    mov ax, 0
+    call END_SCREEN
+    
 EXIT_UPD_GAME:
     ret
 DRAW_GAME endp
@@ -226,7 +236,6 @@ UPDATE_POS endp
 ; bp = str offset
 PRINT_PHASE proc
     push bx
-    push cx
     push dx
 
     call CLEAR_SCREEN
@@ -241,7 +250,61 @@ PRINT_PHASE proc
     call CLEAR_SCREEN
 
     pop dx
-    pop cx
     pop bx
     ret
 PRINT_PHASE endp
+
+; Input:
+; ax = 1 win or 0 loss
+END_SCREEN proc
+    push bx
+    push dx
+
+    call CLEAR_SCREEN
+
+    mov [str_int_color], 0Fh
+    mov [current_sector], FIRST_SECTOR   ; restart from first level
+
+    cmp ax, 1
+    je SET_WINNER
+SET_GAME_OVER:
+    mov bl, 04h ; color 
+    mov bp, offset game_over
+    mov dh, 10   ; line 
+    mov dl, 0  ; column 
+    call PRINT_STR
+    jmp EXIT_END_SCREEN
+SET_WINNER:
+    mov bl, 02h ; color 
+    mov bp, offset winner
+    mov dh, 10   ; line 
+    mov dl, 0  ; column 
+    call PRINT_STR
+
+    mov bl, 0Fh ; color
+    mov bp, offset score_foreground
+    mov dh, 18  ; row
+    mov dl, 17 ; column
+    call PRINT_STR 
+
+    mov dh, 18  ; row
+    mov dl, 21 ; column
+    call SET_POS_CURSOR
+
+    mov bx, [score_points]
+    add ax, bx
+    mov [score_points], ax
+    mov bl, 0Fh
+    call ESC_UINT16
+
+EXIT_END_SCREEN:
+    mov CX, 1EH
+    call DELAY
+
+    call CLEAR_SCREEN
+    mov [menu_active], 1
+
+    pop dx
+    pop bx
+    ret
+END_SCREEN endp

@@ -18,7 +18,7 @@ SETUP_STATUS_BAR proc
 
     ; lives
     mov cx, [lives]
-    mov bx, 110
+    mov bx, 120
 DRAW_LIFE: 
     push cx
     mov cx, 0
@@ -33,6 +33,7 @@ SETUP_STATUS_BAR endp
 
 UPDATE_TIMER proc
     push ax
+    push bx
     push dx
 
     call READ_RTC
@@ -62,6 +63,7 @@ DEC_TIMER:
     mov dh, 0
     mov dl, 38
     call SET_POS_CURSOR
+    mov bl, 02h
     call ESC_UINT16
 
     mov ax, [sector_bonus_points]
@@ -69,6 +71,7 @@ DEC_TIMER:
 
 EXIT_TIMER:
     pop dx
+    pop bx
     pop ax
     ret
 UPDATE_TIMER endp
@@ -78,7 +81,7 @@ UPDATE_LIVES proc
     push cx
     push si
 
-    mov bx, 110
+    mov bx, 120
     mov cx, 0
     mov si, offset empty_sprite
     call DRAW_SPRITE
@@ -89,10 +92,10 @@ UPDATE_LIVES proc
 
     ; dec lives
     mov cx, [lives]
-    cmp cx, 1
-    jbe EXIT_UPD_LIVES
     dec cx
     mov [lives], cx
+    cmp cx, 0
+    jbe EXIT_UPD_LIVES
     mov bx, 110
 DRAW_PLAYER_LIFE: 
     push cx
@@ -126,6 +129,7 @@ UPDATE_SCORE proc
     mov bx, [score_points]
     add ax, bx
     mov [score_points], ax
+    mov bl, 02h
     call ESC_UINT16
 
     ret

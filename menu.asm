@@ -1,11 +1,10 @@
 ; menu.asm
 
 DRAW_MENU proc
+    push ax
     push bx
     push dx
     push bp
-    push ax
-    push bx
     push si
 
     call CLEAR_SCREEN
@@ -22,7 +21,7 @@ DRAW_MENU proc
 DRAW_BUTTONS:
     ; start button
     xor bx, bx
-    mov bl, [active_button ]
+    mov bl, [active_button]
     mov bl, [button_colors + bx]
     mov dh, 16  ; line 
     mov dl, 18  ; column 
@@ -118,13 +117,10 @@ EXIT_BUTTON:
     mov [exit_game], 1
 
 EXIT_UPD_MENU:
-    call CLEAR_SCREEN
-
-    pop bx
-    pop dx
-    pop bp
-    pop ax
-    pop bx
     pop si
+    pop bp
+    pop dx
+    pop bx
+    pop ax
     ret
 DRAW_MENU endp
