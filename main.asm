@@ -21,13 +21,14 @@ SPRITE_WIDTH  equ 29
 SPRITE_HEIGHT equ 13
 BLOCK_WIDTH   equ 24
 BLOCK_HEIGHT  equ 16
-MAX_ELEMENTS  equ 10
+MAX_ELEMENTS  equ 9
 SECTOR_TIME   equ 60
 FIRST_SECTOR  equ -2
 
 SCREEN_TOP_LIMIT equ 20   ; limit movement
 JET_OFFSET       equ 0    ; START POSITION = JET
-OBSTACLE_OFFSET  equ 2    ; METEOR OR ALIEN
+PLANET_OFFSET    equ 2    ; Planet
+OBSTACLE_OFFSET  equ 4    ; METEOR OR ALIEN
 
 ; movement flags 
 DOWN          equ 1000b
@@ -75,7 +76,7 @@ has_moved db 0
 
 direction db MAX_ELEMENTS DUP(IDLE)
 speed_high dw MAX_ELEMENTS DUP(0)
-speed_low dw MAX_ELEMENTS DUP(10000)   ; x/65535
+speed_low dw MAX_ELEMENTS DUP(15000)   ; x/65535
 
 ; ------------------------------------
 

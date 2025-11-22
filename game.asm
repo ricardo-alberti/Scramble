@@ -4,6 +4,9 @@
 INCLUDE status.asm
 INCLUDE sectors.asm
 
+;DRAW_PLANET proc
+;DRAW_PLANET endp
+
 DRAW_GAME proc
 
 NEXT_SECTOR:
@@ -47,10 +50,18 @@ SECTOR_LOOP:
     mov cx, [pos_y_high + si]
 
     cmp si, 0
-    jnz .set_obstacle_sprite
+    je .set_jet_sprite
+    cmp si, 2
+    je .set_planet_sprite
+    jmp .set_obstacle_sprite
 .set_jet_sprite:
     mov si, offset jet
     jmp .draw 
+.set_planet_sprite:
+    mov si, offset planet 
+    ;call DRAW_PLANET
+    ;jmp .continue
+    jmp .draw
 .set_obstacle_sprite:
     mov si, [obstacle_str_offset]
 .draw:
@@ -186,6 +197,7 @@ wrap_right:
     cmp cx, si
     je block_left
     mov dx, SCREEN_WIDTH
+    call SPAWN_RIGHT
     jmp STORE_X
 
 block_left:
@@ -326,3 +338,43 @@ EXIT_END_SCREEN:
     pop bx
     ret
 END_SCREEN endp
+
+; clean sprite on the left and sets random position on the right
+; Input:
+; si = element index
+SPAWN_RIGHT proc
+    push bx
+    push ax
+
+    mov al, [menu_active]  ; if on menu does not spawn
+    cmp al, 1
+    je END_SPAWN
+    cmp si, 2    ; if planet offset returns
+    je END_SPAWN
+
+    push bx
+    push cx
+    push si
+    mov bx, [pos_x_high + si]
+    mov cx, [pos_y_high + si]
+    mov si, offset empty_sprite 
+    call DRAW_SPRITE
+
+    pop si
+    pop cx
+    pop bx
+
+    mov bx, 8  ; limit random number
+    call GET_RANDOM_VALUE  ; ax = random value
+    mov bx, SPRITE_HEIGHT + 5   ; distance between obstacles
+    mul bx
+    add ax, SCREEN_TOP_LIMIT
+    mov dx, SCREEN_WIDTH - SPRITE_WIDTH
+    mov [pos_y_high + si], ax
+
+
+END_SPAWN:
+    pop ax
+    pop bx
+    ret
+SPAWN_RIGHT endp
