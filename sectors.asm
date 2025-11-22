@@ -12,7 +12,7 @@ START_SECTOR_ONE proc
     mov bp, offset sector1
     call PRINT_PHASE
 
-    mov [speed_low], 6000
+    mov [speed_low], 10000
     mov [active_count], 2
     mov [obstacle_str_offset], offset meteor
     mov [current_timer], SECTOR_TIME
@@ -57,7 +57,6 @@ START_SECTOR_TWO proc
 
     mov bp, offset sector2
     call PRINT_PHASE
-    mov [speed_low], 8000
     mov [active_count], 2
     mov [obstacle_str_offset], offset alien
     mov [current_timer], SECTOR_TIME
@@ -76,6 +75,7 @@ START_SECTOR_TWO proc
     mov [pos_x_high + si], SCREEN_WIDTH - SPRITE_WIDTH ; y
     mov [pos_y_high + si], 76 ; y
     mov [direction + si], LEFT    ; move left
+    mov [speed_low + si], 7000
 
     ; planet
     mov cx, 140 ; y
@@ -100,7 +100,6 @@ START_SECTOR_THREE proc
 
     mov bp, offset sector3
     call PRINT_PHASE
-    mov [speed_low], 20000
     mov [active_count], 2
     mov [obstacle_str_offset], offset meteor
     mov [current_timer], SECTOR_TIME
@@ -119,6 +118,7 @@ START_SECTOR_THREE proc
     mov [pos_x_high + si], SCREEN_WIDTH - SPRITE_WIDTH ; y
     mov [pos_y_high + si], 76 ; y
     mov [direction + si], LEFT    ; move left
+    mov [speed_low + si], 8000
 
     ; planet
     mov cx, 100 ; y

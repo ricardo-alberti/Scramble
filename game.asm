@@ -34,7 +34,7 @@ SECTOR_LOOP:
     ; update positions and draw elements
     xor si, si
     mov cx, [active_count]
-UPD_ELEMENTS:
+.update_elements:
 
     push si
     push cx
@@ -42,13 +42,13 @@ UPD_ELEMENTS:
     mov cx, [pos_y_high + si]
 
     cmp si, 0
-    jnz OBSTACLE_SPRITE
-JET_SPRITE:
+    jnz .set_obstacle_sprite
+.set_jet_sprite:
     mov si, offset jet
-    jmp DRAW 
-OBSTACLE_SPRITE:
+    jmp .draw 
+.set_obstacle_sprite:
     mov si, [obstacle_str_offset]
-DRAW:
+.draw:
     call DRAW_SPRITE
 
     pop cx
@@ -56,7 +56,7 @@ DRAW:
 
     call UPDATE_POS
     add si, 2
-    loop UPD_ELEMENTS
+    loop .update_elements
 
     jmp SECTOR_LOOP
 ; -----------------------
@@ -73,46 +73,51 @@ EXIT_UPD_GAME:
     ret
 DRAW_GAME endp
 
-
-; maps user input to game actions
+; maps input to jet direction
 RESOLVE_INPUT proc
-    call GET_INPUT
-    jnz CHECK_KEY_RIGHT  
-    jmp NO_INPUT
+    mov [shooting], 0     ; default: not shooting
 
-CHECK_KEY_RIGHT:
-    xor al, al 
+READ_KEYS:
+    ; Check if a key is waiting (AH=01h)
+    mov ah, 01h
+    int 16h
+    jz RESOLVED               ; no more keys -> exit
+
+    ; Read key (AH=00h)
+    mov ah, 00h
+    int 16h               ; AL = ASCII, AH = scan code
+
+    ; ----- direction keys -----
     cmp ah, KEY_RIGHT
-    jnz CHECK_KEY_LEFT
-    or al, RIGHT
-CHECK_KEY_LEFT:
+    jne .check_left
+    or  al, RIGHT
+.check_left:
     cmp ah, KEY_LEFT
-    jnz CHECK_KEY_UP
-    or al, LEFT
-CHECK_KEY_UP:
+    jne .check_up
+    or  al, LEFT
+.check_up:
     cmp ah, KEY_UP
-    jnz CHECK_KEY_DOWN
-    or al, UP
-CHECK_KEY_DOWN:
+    jne .check_down
+    or  al, UP
+.check_down:
     cmp ah, KEY_DOWN
-    jnz CHECK_KEY_SPACE
-    or al, DOWN
-CHECK_KEY_SPACE:
-    cmp ah, KEY_SPACE
-    jnz RESOLVE
-    mov [shooting], 1 ; sets to shoot
-    jmp RESOLVE
-NO_INPUT:
-    ;xor ax, ax
-    mov [shooting], 0 ; sets to shoot
+    jne .check_space
+    or  al, DOWN
 
-RESOLVE:
-    mov [direction], al ; change jet direction
+    ; ----- space key -----
+.check_space:
+    cmp ah, KEY_SPACE
+    jne READ_KEYS
+    mov [shooting], 1
+    jmp READ_KEYS
+
+RESOLVED:
+    mov [direction], al   ; apply movement mask
     ret
 RESOLVE_INPUT endp
 
 ; Input:
-; SI = index (of object)
+; SI = offset (index * 2)
 UPDATE_POS PROC
     push ax
     push bx
@@ -121,107 +126,101 @@ UPDATE_POS PROC
     push si
     push di
 
-    ; Each position has low and high bytes stored in arrays:
-    ; pos_x_low[], pos_x_high[], pos_y_low[], pos_y_high[]
+    ;----------------------------------
+    ; LOAD DIRECTION for this object
+    ;----------------------------------
+    mov bx, si
+    mov bl, [direction + bx]     ; direction is word array but low byte is flags
 
-    ; LOAD direction
-    mov bl, [direction + si]
+    ;----------------------------------
+    ; HORIZONTAL MOVEMENT
+    ;----------------------------------
 
-    mov cx, si               ; CX = index
-
-    ; HORIZONTAL
     ; Load X position
-    mov si, offset pos_x_low
-    add si, cx
-    mov ax, [si]
+    mov ax, [pos_x_low  + si]
+    mov dx, [pos_x_high + si]
 
-
-    mov di, offset pos_x_high
-    add di, cx
-    mov dx, [di]
-
-    ; Move right
 CHECK_RIGHT:
     test bl, RIGHT
     jz CHECK_LEFT
-    add ax, [speed_low]
-    adc dx, [speed_high]
+
+    add ax, [speed_low  + si]
+    adc dx, [speed_high + si]
+
     cmp dx, SCREEN_WIDTH - SPRITE_WIDTH
-    jae BLOCK_RIGHT
+    jae block_right
     jmp STORE_X
-WRAP_LEFT:
-    pop ax
+
+wrap_left:
     cmp dx, SCREEN_WIDTH
     jb STORE_X
-    xor dx, dx               ; wrap to 0
+    xor dx, dx
     jmp STORE_X
-BLOCK_RIGHT:
-    push ax
-    mov ax, [wrap_screen] 
-    cmp ax, cx
-    jne WRAP_LEFT
-    pop ax
+
+block_right:
+    mov cx, [wrap_screen]
+    cmp cx, si
+    jne wrap_left
     mov dx, SCREEN_WIDTH - SPRITE_WIDTH
     jmp STORE_X
-    
+
 CHECK_LEFT:
     test bl, LEFT
     jz STORE_X
-    sub ax, [speed_low]
-    sbb dx, [speed_high]
-    js WRAP_RIGHT            ; if negative
+
+    sub ax, [speed_low  + si]
+    sbb dx, [speed_high + si]
+
+    js wrap_right
     jmp STORE_X
-WRAP_RIGHT:
-    push ax
-    mov ax, [wrap_screen]
-    cmp ax, cx
-    je BLOCK_LEFT
-    pop ax
+
+wrap_right:
+    mov cx, [wrap_screen]
+    cmp cx, si
+    je block_left
     mov dx, SCREEN_WIDTH
     jmp STORE_X
-BLOCK_LEFT:
-    pop ax
+
+block_left:
     xor dx, dx
     jmp STORE_X
 
 STORE_X:
-    mov [si], ax
-    mov [di], dx
+    mov [pos_x_low  + si], ax
+    mov [pos_x_high + si], dx
 
-    ; VERTICAL
-    mov si, offset pos_y_low
-    add si, cx
-    mov ax, [si]
+    ;----------------------------------
+    ; VERTICAL MOVEMENT
+    ;----------------------------------
 
-    mov di, offset pos_y_high
-    add di, cx
-    mov dx, [di]
+    mov ax, [pos_y_low  + si]
+    mov dx, [pos_y_high + si]
 
 CHECK_UP:
     test bl, UP
     jz CHECK_DOWN
-    sub ax, [speed_low]
-    sbb dx, [speed_high]
+
+    sub ax, [speed_low  + si]
+    sbb dx, [speed_high + si]
+
     cmp dx, SCREEN_TOP_LIMIT
-    js BLOCK_UP
-    jmp STORE_Y
-BLOCK_UP:
+    jae STORE_Y
     mov dx, SCREEN_TOP_LIMIT
-    jmp STORE_Y
 
 CHECK_DOWN:
     test bl, DOWN
     jz STORE_Y
-    add ax, [speed_low]
-    adc dx, [speed_high]
+
+    add ax, [speed_low  + si]
+    adc dx, [speed_high + si]
+
     cmp dx, SCREEN_HEIGHT - SPRITE_HEIGHT
     jb STORE_Y
-BLOCK_DOWN:
-    mov dx, SCREEN_HEIGHT - SPRITE_HEIGHT               ; wrap to 0
+    mov dx, SCREEN_HEIGHT - SPRITE_HEIGHT
 
 STORE_Y:
-    mov [si], ax
-    mov [di], dx
+    mov [pos_y_low  + si], ax
+    mov [pos_y_high + si], dx
 
     pop di
     pop si

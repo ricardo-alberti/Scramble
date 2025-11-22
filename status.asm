@@ -47,7 +47,7 @@ DEC_TIMER:
     dec ax
     mov [current_timer], ax
 
-    REDRAW_TIMER:
+REDRAW_TIMER:
     mov dh, 0
     mov dl, 38
     call SET_POS_CURSOR

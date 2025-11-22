@@ -22,7 +22,7 @@ SPRITE_HEIGHT equ 13
 BLOCK_WIDTH   equ 24
 BLOCK_HEIGHT  equ 16
 MAX_ELEMENTS  equ 10
-SECTOR_TIME   equ 10
+SECTOR_TIME   equ 60
 FIRST_SECTOR  equ -2
 
 SCREEN_TOP_LIMIT equ 20   ; limit movement
@@ -73,8 +73,8 @@ lives dw 3
 shooting db 1
 
 direction db MAX_ELEMENTS DUP(IDLE)
-speed_high dw 0
-speed_low dw 0   ; x/65535
+speed_high dw MAX_ELEMENTS DUP(0)
+speed_low dw MAX_ELEMENTS DUP(10000)   ; x/65535
 
 ; ------------------------------------
 

@@ -279,7 +279,12 @@ DRAW_SPRITE proc
     mov ax, VIDEO_SEG
     mov es, ax
 
-    call CALC_ADDRESS ; di = address
+    xor ax, ax    
+    mov ax, cx
+    mov dx, 320
+    mul dx        ; AX = row*320
+    add ax, bx
+    mov di, ax
 
     mov cx, SPRITE_HEIGHT   ; outer loop: rows
 DRAW_ROW:
