@@ -71,6 +71,7 @@ score_points dw 0
 active_count dw 0     ; elements to draw/update
 lives dw 3
 shooting db 1
+has_moved db 0
 
 direction db MAX_ELEMENTS DUP(IDLE)
 speed_high dw MAX_ELEMENTS DUP(0)

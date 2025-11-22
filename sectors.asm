@@ -28,17 +28,21 @@ START_SECTOR_ONE proc
     mov [direction], IDLE
     mov [pos_x_high], 20 ; y
     mov [pos_y_high], 100 ; middle screen_height
+    mov bx, [pos_x_high]
+    mov cx, [pos_y_high]
+    mov si, offset jet
+    call DRAW_SPRITE
+
+    ; planet
+    mov cx, 180 ; y
+    mov bl, 6   ; color
+    call FILL_REC
 
     ; meteor
     mov si, 2 ; offset
     mov [pos_x_high + si], SCREEN_WIDTH - SPRITE_WIDTH ; y
     mov [pos_y_high + si], 76 ; y
     mov [direction + si], LEFT    ; move left
-
-    ; planet
-    mov cx, 180 ; y
-    mov bl, 6   ; color
-    call FILL_REC
 
     pop cx
     pop bx

@@ -36,6 +36,11 @@ SECTOR_LOOP:
     mov cx, [active_count]
 .update_elements:
 
+    call UPDATE_POS
+    mov bl, [has_moved]
+    cmp bl, 0           ; if no movement dont draw
+    je .continue
+
     push si
     push cx
     mov bx, [pos_x_high + si]
@@ -50,11 +55,9 @@ SECTOR_LOOP:
     mov si, [obstacle_str_offset]
 .draw:
     call DRAW_SPRITE
-
     pop cx
     pop si
-
-    call UPDATE_POS
+.continue:
     add si, 2
     loop .update_elements
 
@@ -118,6 +121,8 @@ RESOLVE_INPUT endp
 
 ; Input:
 ; SI = offset (index * 2)
+; Output:
+; has_moved = 1 or 0
 UPDATE_POS PROC
     push ax
     push bx
@@ -126,11 +131,13 @@ UPDATE_POS PROC
     push si
     push di
 
+    mov [has_moved], 0
+
     ;----------------------------------
     ; LOAD DIRECTION for this object
     ;----------------------------------
     mov bx, si
-    mov bl, [direction + bx]     ; direction is word array but low byte is flags
+    mov bl, [direction + bx]
 
     ;----------------------------------
     ; HORIZONTAL MOVEMENT
@@ -186,6 +193,12 @@ block_left:
     jmp STORE_X
 
 STORE_X:
+    mov cx, [pos_x_high]
+    cmp cx, dx
+    je SAVE_X
+    mov [has_moved], 1
+
+SAVE_X:
     mov [pos_x_low  + si], ax
     mov [pos_x_high + si], dx
 
@@ -219,6 +232,12 @@ CHECK_DOWN:
     mov dx, SCREEN_HEIGHT - SPRITE_HEIGHT
 
 STORE_Y:
+    mov cx, [pos_y_high]
+    cmp cx, dx
+    je SAVE_Y
+    mov [has_moved], 1
+
+SAVE_Y:
     mov [pos_y_low  + si], ax
     mov [pos_y_high + si], dx
 
