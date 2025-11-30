@@ -16,7 +16,7 @@ START_SECTOR_ONE proc
     mov [obstacle_str_offset], offset meteor
     mov [current_timer], SECTOR_TIME
     mov [wrap_screen], 0
-    mov [sector_bonus_points], 10
+    mov [sector_bonus_points], 15
     mov [str_int_color], 02h
 
     ; status bar
@@ -91,14 +91,13 @@ START_SECTOR_TWO proc
     mov [obstacle_str_offset], offset alien
     mov [current_timer], SECTOR_TIME
     mov [wrap_screen], 0
-    mov [sector_bonus_points], 10
+    mov [sector_bonus_points], 20
     mov [str_int_color], 02h
 
     ; status bar
     call SETUP_STATUS_BAR
 
     ; jet
-    mov [score_points], 0
     mov [direction], IDLE
     mov [speed_low], 20000
     mov [pos_x_high], 20
@@ -173,7 +172,6 @@ START_SECTOR_THREE proc
     call SETUP_STATUS_BAR
 
     ; jet
-    mov [score_points], 0
     mov [direction], IDLE
     mov [speed_low], 20000
     mov [pos_x_high], 20

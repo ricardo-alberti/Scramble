@@ -37,7 +37,9 @@ DRAW_BUTTONS:
     call DRAW_BUTTON
 
     ; animate_menu_loop
-    mov [speed_low], 10000
+    mov [speed_low], 10000  ; jet
+    mov [speed_low + 2], 10000 ; meteor
+    mov [speed_low + 4], 10000 ; alien
 ANIMATE_MENU:
     ; alien
     mov si, 4

@@ -113,24 +113,41 @@ EXIT_UPD_LIVES:
     ret
 UPDATE_LIVES endp
 
-; Input:
-; ax = score gain
 UPDATE_SCORE proc
-    mov bl, 02h ; color
-    mov dh, 0   ; row
-    mov dl, 7   ; column
+    ; imprime "score: "
+    mov bl, 02h
+    mov dh, 0
+    mov dl, 7
     mov bp, offset score_foreground
-    call PRINT_STR 
+    call PRINT_STR
 
-    mov dh, 0  ; row
-    mov dl, 10 ; column
+    ; atualiza o score
+    add [score_points], ax
+
+    ; conta os dígitos
+    mov ax, [score_points]
+    xor cx, cx
+
+count_digits:
+    inc cx
+    mov dx, 0
+    mov bx, 10
+    div bx
+    cmp ax, 0
+    jne count_digits
+
+    ; coluna base = 10
+    ; coluna = 10 - (cx - 1)
+    mov dl, 11
+    sub dl, cl    ; cl = numero de dígitos
+    inc dl        ; ajustar o recuo
+
+    mov dh, 0
     call SET_POS_CURSOR
 
-    mov bx, [score_points]
-    add ax, bx
-    mov [score_points], ax
+    ; imprime o score
+    mov ax, [score_points]
     mov bl, 02h
     call ESC_UINT16
-
     ret
 UPDATE_SCORE endp
