@@ -55,22 +55,22 @@ active_button db 1, 0
 button_colors db 0Fh, 0Ch
 obstacle_str_offset dw 0                  ; sets which obstacle to draw
 current_rtc db 0                          ; BIOS real time clock passed
-current_timer dw SECTOR_TIME              ; game timer 60s
+current_timer db SECTOR_TIME              ; game timer 60s
 
-current_sector dw FIRST_SECTOR
+current_sector db FIRST_SECTOR
 sectors dw offset START_SECTOR_ONE, offset START_SECTOR_TWO, offset START_SECTOR_THREE
-sector_bonus_points dw 0
+sector_bonus_points db 0
             
 wrap_screen dw 0
 pos_x_high dw MAX_ELEMENTS DUP(0)         ; position of elements
 pos_x_low dw MAX_ELEMENTS DUP(0)          
-pos_y_high dw MAX_ELEMENTS DUP(0)         
+pos_y_high db MAX_ELEMENTS DUP(0)         
 pos_y_low dw MAX_ELEMENTS DUP(0)          
 
 str_int_color db 02h
 score_points dw 0
 active_count dw 0     ; elements to draw/update
-lives dw 3
+lives db 3
 shooting db 1
 has_moved db 0
 

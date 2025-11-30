@@ -17,12 +17,13 @@ SETUP_STATUS_BAR proc
     call PRINT_STR
 
     ; lives
-    mov cx, [lives]
+    mov cl, [lives]
+    xor ch, ch
     mov bx, 120
 DRAW_LIFE: 
     push cx
-    mov cx, 0
-    mov si, offset jet
+    mov cl, 0
+    mov si, offset life
     call DRAW_SPRITE
     add bx, 24
     pop cx
@@ -43,9 +44,9 @@ UPDATE_TIMER proc
     mov [current_rtc], dh  ; updates rtc time passed
 
 DEC_TIMER:
-    mov ax, [current_timer]
-    dec ax
-    mov [current_timer], ax
+    mov al, [current_timer]
+    dec al
+    mov [current_timer], al
 
 REDRAW_TIMER:
     mov dh, 0
@@ -66,7 +67,7 @@ REDRAW_TIMER:
     mov bl, 02h
     call ESC_UINT16
 
-    mov ax, [sector_bonus_points]
+    mov al, [sector_bonus_points]
     call UPDATE_SCORE
 
 EXIT_TIMER:
@@ -91,16 +92,16 @@ UPDATE_LIVES proc
     call DRAW_SPRITE
 
     ; dec lives
-    mov cx, [lives]
-    dec cx
-    mov [lives], cx
+    mov cl, [lives]
+    dec cl
+    mov [lives], cl
     cmp cx, 0
     jbe EXIT_UPD_LIVES
     mov bx, 110
 DRAW_PLAYER_LIFE: 
     push cx
     mov cx, 0
-    mov si, offset jet
+    mov si, offset life
     call DRAW_SPRITE
     add bx, 24
     pop cx
@@ -113,7 +114,11 @@ EXIT_UPD_LIVES:
     ret
 UPDATE_LIVES endp
 
+; Input:
+; al = pontos ganhos
 UPDATE_SCORE proc
+    xor ch, ch
+
     ; imprime "score: "
     mov bl, 02h
     mov dh, 0

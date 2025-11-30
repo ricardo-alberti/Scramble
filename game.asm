@@ -10,12 +10,13 @@ INCLUDE sectors.asm
 DRAW_GAME proc
 
 NEXT_SECTOR:
-    mov di, [current_sector]
-    cmp di, 4
+    mov bl, [current_sector]
+    xor bh, bh
+    cmp bx, 4
     je END_WINNER
-    add di, 2
-    mov [current_sector], di
-    mov bx, [sectors + di]
+    add bl, 2
+    mov [current_sector], bl
+    mov bx, [sectors + bx]
     call bx
 
 ; -----------------------
@@ -25,52 +26,54 @@ SECTOR_LOOP:
     call RESOLVE_INPUT
     call UPDATE_TIMER
 
-    mov bx, [lives]
+    mov bl, [lives]
+    xor bh, bh
     cmp bx, 0
     je END_GAME_OVER
     ; if timer 0 go to next sector
 
-    mov bx, [current_timer]
+    mov bl, [current_timer]
+    xor bh, bh
     cmp bx, 0
     je NEXT_SECTOR
 
     ; update positions and draw elements
     xor si, si
     mov cx, [active_count]
-.update_elements:
+UPDATE_ELEMENTS:
 
     call UPDATE_POS
     mov bl, [has_moved]
     cmp bl, 0           ; if no movement dont draw
-    je .continue
+    je CONTINUE
 
     push si
     push cx
     mov bx, [pos_x_high + si]
-    mov cx, [pos_y_high + si]
+    mov cl, [pos_y_high + si]
 
     cmp si, 0
-    je .set_jet_sprite
+    je SET_JET_SPRITE
     cmp si, 2
-    je .set_planet_sprite
-    jmp .set_obstacle_sprite
-.set_jet_sprite:
+    je SET_PLANET_SPRITE
+    jmp SET_OBSTACLE_SPRITE
+SET_JET_SPRITE:
     mov si, offset jet
-    jmp .draw 
-.set_planet_sprite:
+    jmp DRAW 
+SET_PLANET_SPRITE:
     mov si, offset planet 
     ;call DRAW_PLANET
     ;jmp .continue
-    jmp .draw
-.set_obstacle_sprite:
+    jmp DRAW
+SET_OBSTACLE_SPRITE:
     mov si, [obstacle_str_offset]
-.draw:
+DRAW:
     call DRAW_SPRITE
     pop cx
     pop si
-.continue:
+CONTINUE:
     add si, 2
-    loop .update_elements
+    loop UPDATE_ELEMENTS
 
     jmp SECTOR_LOOP
 ; -----------------------
@@ -219,7 +222,7 @@ SAVE_X:
     ;----------------------------------
 
     mov ax, [pos_y_low  + si]
-    mov dx, [pos_y_high + si]
+    mov dl, [pos_y_high + si]
 
 CHECK_UP:
     test bl, UP
@@ -244,14 +247,15 @@ CHECK_DOWN:
     mov dx, SCREEN_HEIGHT - SPRITE_HEIGHT
 
 STORE_Y:
-    mov cx, [pos_y_high]
+    mov cl, [pos_y_high]
+    xor ch, ch
     cmp cx, dx
     je SAVE_Y
     mov [has_moved], 1
 
 SAVE_Y:
     mov [pos_y_low  + si], ax
-    mov [pos_y_high + si], dx
+    mov [pos_y_high + si], dl
 
     pop di
     pop si
@@ -356,7 +360,7 @@ SPAWN_RIGHT proc
     push cx
     push si
     mov bx, [pos_x_high + si]
-    mov cx, [pos_y_high + si]
+    mov cl, [pos_y_high + si]
     mov si, offset empty_sprite 
     call DRAW_SPRITE
 
@@ -370,7 +374,7 @@ SPAWN_RIGHT proc
     mul bx
     add ax, SCREEN_TOP_LIMIT
     mov dx, SCREEN_WIDTH - SPRITE_WIDTH
-    mov [pos_y_high + si], ax
+    mov [pos_y_high + si], al
 
 
 END_SPAWN:

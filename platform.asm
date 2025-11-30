@@ -11,7 +11,7 @@
 READ_RTC proc
     push ax
     push cx
-    mov ah, 02h         ; only return dx for now
+    mov ah, 02h         ; apenas usar dx
     int 1Ah
     pop ax
     pop cx
@@ -68,7 +68,9 @@ DRAW_BUTTON proc
     ret
 DRAW_BUTTON endp 
 
+; Desenha retângulo
 ; Input:
+; (largura e altura fixas)
 ; BL = color
 ; DH = line
 ; DL = column
@@ -145,14 +147,17 @@ DRAW_REC PROC
     ret
 DRAW_REC endp
 
+; Preenche tela com cor a partir de y
 ; Input: 
-; cx = y
+; cl = y
 ; bl = color
 FILL_REC proc
     push ax
     push cx
     push dx
     push di
+
+    xor ch, ch
     
     xor ax, ax    
     mov ax, cx
@@ -208,6 +213,7 @@ DELAY proc
     pop ax
 DELAY endp
 
+; Lê teclado
 ; Output:
 ; AL = ASCII, AH = scan code
 GET_INPUT proc
@@ -224,7 +230,7 @@ NO_KEY:
 GET_INPUT endp
 
 
-; fill screen with black 
+; Preenche área da memória de vídeo com 0 (preto)
 CLEAR_SCREEN proc
     push ax
     push cx
@@ -267,7 +273,7 @@ CALC_ADDRESS endp
 ; Input:
 ; si = sprite source index
 ; bx = x
-; cx = y
+; cl = y
 DRAW_SPRITE proc
     push ax
     push bx
@@ -278,6 +284,8 @@ DRAW_SPRITE proc
 
     mov ax, VIDEO_SEG
     mov es, ax
+
+    xor ch, ch  ; apenas usar cl para y (0-255)
 
     xor ax, ax    
     mov ax, cx

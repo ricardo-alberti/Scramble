@@ -61,7 +61,8 @@ TURN_RIGHT:
 MOVE_CONTINUE:
     call UPDATE_POS
     mov bx, [pos_x_high + si]
-    mov cx, [pos_y_high + si]
+    mov cl, [pos_y_high + si]
+    xor ch, ch
     mov si, offset alien
     call DRAW_SPRITE
 
@@ -72,7 +73,8 @@ MOVE_CONTINUE:
     call UPDATE_POS
 
     mov bx, [pos_x_high]
-    mov cx, [pos_y_high]
+    mov cl, [pos_y_high]
+    xor ch, ch
     mov si, offset jet
     call DRAW_SPRITE
 
@@ -82,7 +84,8 @@ MOVE_CONTINUE:
     mov [direction + si], LEFT    ; move left
     call UPDATE_POS
     mov bx, [pos_x_high + si]
-    mov cx, [pos_y_high + si]
+    mov cl, [pos_y_high + si]
+    xor ch, ch
     mov si, offset meteor
     call DRAW_SPRITE
 
