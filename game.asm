@@ -3,6 +3,7 @@
 ; status HUD
 INCLUDE status.asm
 INCLUDE sectors.asm
+INCLUDE collide.asm ; detecção de colisão
 
 ;DRAW_PLANET proc
 ;DRAW_PLANET endp
@@ -42,7 +43,8 @@ SECTOR_LOOP:
     mov cx, [active_count]
 UPDATE_ELEMENTS:
 
-    call UPDATE_POS
+    call UPDATE_POS      ; input si -> offset do elemento
+    call RESOLVE_COLLISION ; input si -> offset do elemento
     mov bl, [has_moved]
     cmp bl, 0           ; if no movement dont draw
     je CONTINUE
@@ -107,23 +109,23 @@ READ_KEYS:
 
     ; ----- direction keys -----
     cmp ah, KEY_RIGHT
-    jne .check_left
+    jne RES_LEFT
     or  al, RIGHT
-.check_left:
+RES_LEFT:
     cmp ah, KEY_LEFT
-    jne .check_up
+    jne RES_UP
     or  al, LEFT
-.check_up:
+RES_UP:
     cmp ah, KEY_UP
-    jne .check_down
+    jne RES_DOWN
     or  al, UP
-.check_down:
+RES_DOWN:
     cmp ah, KEY_DOWN
-    jne .check_space
+    jne RES_SPACE
     or  al, DOWN
 
     ; ----- space key -----
-.check_space:
+RES_SPACE:
     cmp ah, KEY_SPACE
     jne READ_KEYS
     mov [shooting], 1
@@ -352,6 +354,8 @@ END_SCREEN endp
 SPAWN_RIGHT proc
     push bx
     push ax
+    push si
+
 
     mov al, [menu_active]  ; if on menu does not spawn
     cmp al, 1
@@ -379,9 +383,11 @@ SPAWN_RIGHT proc
     add ax, SCREEN_TOP_LIMIT
     mov dx, SCREEN_WIDTH - ENTITY_WIDTH
     mov [pos_y_high + si], al
+    mov [pos_x_high + si], SCREEN_WIDTH - ENTITY_WIDTH
 
 
 END_SPAWN:
+    pop si
     pop ax
     pop bx
     ret

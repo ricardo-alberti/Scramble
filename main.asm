@@ -19,7 +19,7 @@ SCREEN_HEIGHT equ 200
 
 ; dimension constants
 ENTITY_DIM    equ 0
-BLOCK_DIM     equ 2
+PLANET_DIM    equ 2
 LIFE_DIM      equ 4
 ENTITY_WIDTH  equ 29
 ENTITY_HEIGHT equ 13
@@ -33,6 +33,7 @@ SECTOR_TIME   equ 60
 FIRST_SECTOR  equ -2      ; começa com offset fora do limite
 
 SCREEN_TOP_LIMIT equ 20   ; limit movement
+
 JET_OFFSET       equ 0    ; START POSITION = JET
 PLANET_OFFSET    equ 2    ; Planet
 OBSTACLE_OFFSET  equ 4    ; METEOR OR ALIEN

@@ -84,8 +84,8 @@ UPDATE_LIVES proc
     push si
 
     mov bx, 125
-    mov cx, 0
-    mov ch, LIFE_DIM
+    mov cl, 0
+    mov ch, ENTITY_DIM
     mov si, offset empty_sprite
     call DRAW_SPRITE
     add bx, 29
@@ -102,7 +102,7 @@ UPDATE_LIVES proc
     mov bx, 110
 DRAW_PLAYER_LIFE: 
     push cx
-    mov cx, 0
+    mov cl, 0
     mov ch, LIFE_DIM
     mov si, offset life
     call DRAW_SPRITE

@@ -12,6 +12,7 @@ START_SECTOR_ONE proc
     mov bp, offset sector1
     call PRINT_PHASE
 
+    mov [lives], 3
     mov [active_count], 5
     mov [obstacle_str_offset], offset meteor
     mov [current_timer], SECTOR_TIME
