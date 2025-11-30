@@ -19,13 +19,14 @@ SETUP_STATUS_BAR proc
     ; lives
     mov cl, [lives]
     xor ch, ch
-    mov bx, 120
+    mov bx, 125
 DRAW_LIFE: 
     push cx
     mov cl, 0
+    mov ch, LIFE_DIM
     mov si, offset life
     call DRAW_SPRITE
-    add bx, 24
+    add bx, 29
     pop cx
     loop DRAW_LIFE
 
@@ -82,13 +83,14 @@ UPDATE_LIVES proc
     push cx
     push si
 
-    mov bx, 120
+    mov bx, 125
     mov cx, 0
+    mov ch, LIFE_DIM
     mov si, offset empty_sprite
     call DRAW_SPRITE
-    add bx, 24
+    add bx, 29
     call DRAW_SPRITE
-    add bx, 24
+    add bx, 29
     call DRAW_SPRITE
 
     ; dec lives
@@ -101,9 +103,10 @@ UPDATE_LIVES proc
 DRAW_PLAYER_LIFE: 
     push cx
     mov cx, 0
+    mov ch, LIFE_DIM
     mov si, offset life
     call DRAW_SPRITE
-    add bx, 24
+    add bx, 29
     pop cx
     loop DRAW_PLAYER_LIFE
 

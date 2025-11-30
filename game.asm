@@ -68,6 +68,7 @@ SET_PLANET_SPRITE:
 SET_OBSTACLE_SPRITE:
     mov si, [obstacle_str_offset]
 DRAW:
+    mov ch, ENTITY_DIM
     call DRAW_SPRITE
     pop cx
     pop si
@@ -136,7 +137,7 @@ RESOLVE_INPUT endp
 ; Input:
 ; SI = offset (index * 2)
 ; Output:
-; has_moved = 1 or 0
+; has_moved = 1 or 0 (elementos que foram movidos são redesenhados)
 UPDATE_POS PROC
     push ax
     push bx
@@ -168,7 +169,7 @@ CHECK_RIGHT:
     add ax, [speed_low  + si]
     adc dx, [speed_high + si]
 
-    cmp dx, SCREEN_WIDTH - SPRITE_WIDTH
+    cmp dx, SCREEN_WIDTH - ENTITY_WIDTH
     jae block_right
     jmp STORE_X
 
@@ -182,7 +183,7 @@ block_right:
     mov cx, [wrap_screen]
     cmp cx, si
     jne wrap_left
-    mov dx, SCREEN_WIDTH - SPRITE_WIDTH
+    mov dx, SCREEN_WIDTH - ENTITY_WIDTH
     jmp STORE_X
 
 CHECK_LEFT:
@@ -230,6 +231,7 @@ CHECK_UP:
 
     sub ax, [speed_low  + si]
     sbb dx, [speed_high + si]
+    xor dh, dh
 
     cmp dx, SCREEN_TOP_LIMIT
     jae STORE_Y
@@ -241,10 +243,11 @@ CHECK_DOWN:
 
     add ax, [speed_low  + si]
     adc dx, [speed_high + si]
+    xor dh, dh
 
-    cmp dx, SCREEN_HEIGHT - SPRITE_HEIGHT
+    cmp dx, SCREEN_HEIGHT - ENTITY_HEIGHT
     jb STORE_Y
-    mov dx, SCREEN_HEIGHT - SPRITE_HEIGHT
+    mov dx, SCREEN_HEIGHT - ENTITY_HEIGHT
 
 STORE_Y:
     mov cl, [pos_y_high]
@@ -361,6 +364,7 @@ SPAWN_RIGHT proc
     push si
     mov bx, [pos_x_high + si]
     mov cl, [pos_y_high + si]
+    mov ch, ENTITY_DIM
     mov si, offset empty_sprite 
     call DRAW_SPRITE
 
@@ -370,10 +374,10 @@ SPAWN_RIGHT proc
 
     mov bx, 8  ; limit random number
     call GET_RANDOM_VALUE  ; ax = random value
-    mov bx, SPRITE_HEIGHT + 5   ; distance between obstacles
+    mov bx, ENTITY_HEIGHT + 5   ; distance between obstacles
     mul bx
     add ax, SCREEN_TOP_LIMIT
-    mov dx, SCREEN_WIDTH - SPRITE_WIDTH
+    mov dx, SCREEN_WIDTH - ENTITY_WIDTH
     mov [pos_y_high + si], al
 
 

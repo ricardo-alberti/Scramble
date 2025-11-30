@@ -54,7 +54,7 @@ START_SECTOR_ONE proc
     ; meteor
     mov si, 4 ; offset
     mov [speed_low + si], 12000
-    mov [pos_x_high + si], SCREEN_WIDTH - SPRITE_WIDTH ; y
+    mov [pos_x_high + si], SCREEN_WIDTH - ENTITY_WIDTH ; y
     mov [pos_y_high + si], 76 ; y
     mov [direction + si], LEFT    ; move left
 
@@ -129,7 +129,7 @@ START_SECTOR_TWO proc
 
     ; meteor
     mov si, 4 ; offset
-    mov [pos_x_high + si], SCREEN_WIDTH - SPRITE_WIDTH ; y
+    mov [pos_x_high + si], SCREEN_WIDTH - ENTITY_WIDTH ; y
     mov [pos_y_high + si], 76 ; y
     mov [direction + si], LEFT    ; move left
 
@@ -203,7 +203,7 @@ START_SECTOR_THREE proc
 
     ; meteor
     mov si, 4 ; offset
-    mov [pos_x_high + si], SCREEN_WIDTH - SPRITE_WIDTH ; y
+    mov [pos_x_high + si], SCREEN_WIDTH - ENTITY_WIDTH ; y
     mov [pos_y_high + si], 76 ; y
     mov [direction + si], LEFT    ; move left
 

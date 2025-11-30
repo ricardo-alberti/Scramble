@@ -272,8 +272,9 @@ CALC_ADDRESS endp
 
 ; Input:
 ; si = sprite source index
-; bx = x
+; ch = offset dimensão do sprite (largura e altura) 
 ; cl = y
+; bx = x
 DRAW_SPRITE proc
     push ax
     push bx
@@ -281,32 +282,50 @@ DRAW_SPRITE proc
     push dx
     push di
     push si
+    push bp
 
     mov ax, VIDEO_SEG
     mov es, ax
 
-    xor ch, ch  ; apenas usar cl para y (0-255)
-
+    push cx
+    xor ch, ch
     xor ax, ax    
     mov ax, cx
     mov dx, 320
     mul dx        ; AX = row*320
     add ax, bx
     mov di, ax
+    pop cx
 
-    mov cx, SPRITE_HEIGHT   ; outer loop: rows
+    push si
+    push cx
+    mov cl, ch ; teste
+    xor ch, ch
+    mov si, cx
+    mov bl, [sprites_dim + si]     ; largura
+    mov bh, [sprites_dim + si + 1] ; altura
+    pop cx
+    pop si
+
+    mov cl, bh   ; outer loop: rows
+    xor ch, ch
 DRAW_ROW:
-    mov dx, SPRITE_WIDTH    ; inner loop: columns
+    mov dl, bl    ; inner loop: columns
 DRAW_PIXEL:
     movsb                   ; AL = sprite byte, SI++
     jmp NEXT_PIXEL
 NEXT_PIXEL:
-    dec dx
+    dec dl
     jnz DRAW_PIXEL
 
-    add di, 320 - SPRITE_WIDTH  ; move DI to next screen row
+    add di, 320 ; move DI to next screen row   ; this does not work
+    push bx
+    xor bh, bh
+    sub di, bx
+    pop bx
     loop DRAW_ROW
 
+    pop bp
     pop si
     pop di
     pop dx

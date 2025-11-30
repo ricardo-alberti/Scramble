@@ -17,13 +17,20 @@ VIDEO_SEG     equ 0A000h   ; video segment start
 SCREEN_WIDTH  equ 320
 SCREEN_HEIGHT equ 200
 
-SPRITE_WIDTH  equ 29
-SPRITE_HEIGHT equ 13
+; dimension constants
+ENTITY_DIM    equ 0
+BLOCK_DIM     equ 2
+LIFE_DIM      equ 4
+ENTITY_WIDTH  equ 29
+ENTITY_HEIGHT equ 13
 BLOCK_WIDTH   equ 24
 BLOCK_HEIGHT  equ 16
+LIFE_WIDTH    equ 19
+LIFE_HEIGHT   equ 7
+
 MAX_ELEMENTS  equ 9
 SECTOR_TIME   equ 60
-FIRST_SECTOR  equ -2
+FIRST_SECTOR  equ -2      ; começa com offset fora do limite
 
 SCREEN_TOP_LIMIT equ 20   ; limit movement
 JET_OFFSET       equ 0    ; START POSITION = JET
@@ -48,6 +55,10 @@ KEY_ENTER     equ 1Ch
 ; ------------------------------------
 
 ; variables --------------------------
+
+sprites_dim db ENTITY_WIDTH, ENTITY_HEIGHT
+            db BLOCK_WIDTH, BLOCK_HEIGHT
+            db LIFE_WIDTH, LIFE_HEIGHT
 
 menu_active db 1
 exit_game db 0

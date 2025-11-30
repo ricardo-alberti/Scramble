@@ -46,7 +46,7 @@ ANIMATE_MENU:
     mov [pos_y_high + si], 90 ; y stays fixed
     mov ax, [pos_x_high + si]
 
-    cmp ax, SCREEN_WIDTH - SPRITE_WIDTH
+    cmp ax, SCREEN_WIDTH - ENTITY_WIDTH
     jae TURN_LEFT
     cmp ax, 0
     jbe TURN_RIGHT
@@ -62,7 +62,7 @@ MOVE_CONTINUE:
     call UPDATE_POS
     mov bx, [pos_x_high + si]
     mov cl, [pos_y_high + si]
-    xor ch, ch
+    mov ch, ENTITY_DIM
     mov si, offset alien
     call DRAW_SPRITE
 
@@ -74,7 +74,7 @@ MOVE_CONTINUE:
 
     mov bx, [pos_x_high]
     mov cl, [pos_y_high]
-    xor ch, ch
+    mov ch, ENTITY_DIM
     mov si, offset jet
     call DRAW_SPRITE
 
@@ -85,7 +85,7 @@ MOVE_CONTINUE:
     call UPDATE_POS
     mov bx, [pos_x_high + si]
     mov cl, [pos_y_high + si]
-    xor ch, ch
+    mov ch, ENTITY_DIM
     mov si, offset meteor
     call DRAW_SPRITE
 
