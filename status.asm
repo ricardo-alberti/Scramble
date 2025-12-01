@@ -99,7 +99,7 @@ UPDATE_LIVES proc
     mov [lives], cl
     cmp cx, 0
     jbe EXIT_UPD_LIVES
-    mov bx, 110
+    mov bx, 125
 DRAW_PLAYER_LIFE: 
     push cx
     mov cl, 0

@@ -24,6 +24,7 @@ SET_OBSTACLE_DIM:
 
 SET_PLANET_DIM:
     mov di, PLANET_DIM
+    jmp RES_DETECTION  ; por enquanto ignorar colisão com terreno
 
 SET_DIM:
     mov dl, [sprites_dim + ENTITY_DIM]     ; jet player dimension width
@@ -59,19 +60,15 @@ jbe RES_DETECTION
 ; jet
 mov al, [pos_y_high]
 ; obstacle
-push cx
 mov bl, [pos_y_high + si]
-mov ch, cl
-add bl, cl
-pop cx
+add bl, ch
 cmp ax, bx
 jae RES_DETECTION
 
 ; player1.y + player1.height <= player2.y
 ; jet
 mov al, [pos_y_high]
-mov dh, dl
-add al, dl
+add al, dh
 ; obstacle
 mov bl, [pos_y_high + si]
 cmp ax, bx
