@@ -4,48 +4,55 @@
 
 .data 
 
-; sprites ----------------------------
+; sprites ---------------------------
 INCLUDE sprites.asm
 ; -----------------------------------
 
-; constants --------------------------
-
 CR            equ 13       ; carriage return \r
 LF            equ 10       ; line feed \n
-VIDEO_SEG     equ 0A000h   ; video segment start
+VIDEO_SEG     equ 0A000h   ; endereco segmento de video
 
-SCREEN_WIDTH  equ 320
-SCREEN_HEIGHT equ 200
-
-; dimension constants
-ENTITY_DIM    equ 0
-PLANET_DIM    equ 2
-LIFE_DIM      equ 4
+; constantes de dimensoes
 ENTITY_WIDTH  equ 29
 ENTITY_HEIGHT equ 13
 BLOCK_WIDTH   equ 24
 BLOCK_HEIGHT  equ 16
 LIFE_WIDTH    equ 19
 LIFE_HEIGHT   equ 7
+SCREEN_WIDTH  equ 320
+SCREEN_HEIGHT equ 200
+SCREEN_TOP_LIMIT equ 20   ; limitar movimento y
 
-MAX_ELEMENTS  equ 9
-SECTOR_TIME   equ 60
-FIRST_SECTOR  equ -2      ; começa com offset fora do limite
+TERRAIN_LENGTH equ 40  ; 320/8 = 40 blocos de 8 pixels
+terrain_heights db TERRAIN_LENGTH DUP(0)
 
-SCREEN_TOP_LIMIT equ 20   ; limit movement
+MAX_BULLETS    equ 3
+bullet_active  db MAX_BULLETS DUP(0)
+bullet_x       dw MAX_BULLETS DUP(0)
+bullet_y       dw MAX_BULLETS DUP(0)
+bullet_speed   equ 5
 
-JET_OFFSET       equ 0    ; START POSITION = JET
-PLANET_OFFSET    equ 2    ; Planet
-OBSTACLE_OFFSET  equ 4    ; METEOR OR ALIEN
+BRICK_COLUMN_HEIGHT equ 80
 
-; movement flags 
+ENTITY_DIM    equ 0
+PLANET_DIM    equ 2
+LIFE_DIM      equ 4
+sprites_dim db ENTITY_WIDTH, ENTITY_HEIGHT
+            db BLOCK_WIDTH, BLOCK_HEIGHT
+            db LIFE_WIDTH, LIFE_HEIGHT
+
+; constantes do jogo
+SECTOR_TIME   equ 15
+FIRST_SECTOR  equ -2
+
+; flags de movimentacao (direcao)
 DOWN          equ 1000b
 UP            equ 0100b
 LEFT          equ 0010b
 RIGHT         equ 0001b
 IDLE          equ 0000b
 
-; keys
+; teclas
 KEY_DOWN      equ 50h
 KEY_UP        equ 48h
 KEY_LEFT      equ 4Bh
@@ -53,47 +60,46 @@ KEY_RIGHT     equ 4Dh
 KEY_SPACE     equ 39h
 KEY_ENTER     equ 1Ch
 
-; ------------------------------------
+current_rtc db 0          ; BIOS real time clock passed
+has_moved db 0            ; flag usada para otimizacao (apenas elementos movidos sao redesenhados)
 
-; variables --------------------------
+; offset das entidades 
+MAX_ELEMENTS     equ 5
+JET_OFFSET       equ 0
+PLANET_OFFSET    equ 2
+OBSTACLE_OFFSET  equ 4
+; componentes das entidades   
+pos_x_high dw MAX_ELEMENTS DUP(0)
+pos_x_low dw MAX_ELEMENTS DUP(0)          
+pos_y_high dw MAX_ELEMENTS DUP(0)         
+pos_y_low dw MAX_ELEMENTS DUP(0)          
+direction dw MAX_ELEMENTS DUP(IDLE)
+speed_high dw MAX_ELEMENTS DUP(0)
+speed_low dw MAX_ELEMENTS DUP(0)
 
-sprites_dim db ENTITY_WIDTH, ENTITY_HEIGHT
-            db BLOCK_WIDTH, BLOCK_HEIGHT
-            db LIFE_WIDTH, LIFE_HEIGHT
-
+; variaveis menu
 menu_active db 1
 exit_game db 0
 active_button db 1, 0
 button_colors db 0Fh, 0Ch
-obstacle_str_offset dw 0                  ; sets which obstacle to draw
-current_rtc db 0                          ; BIOS real time clock passed
-current_timer db SECTOR_TIME              ; game timer 60s
+wrap_screen dw 0
 
+; variaveis setor
+current_timer db SECTOR_TIME              ; game timer 60s
 current_sector db FIRST_SECTOR
 sectors dw offset START_SECTOR_ONE, offset START_SECTOR_TWO, offset START_SECTOR_THREE
 sector_bonus_points db 0
-            
-wrap_screen dw 0
-pos_x_high dw MAX_ELEMENTS DUP(0)         ; position of elements
-pos_x_low dw MAX_ELEMENTS DUP(0)          
-pos_y_high db MAX_ELEMENTS DUP(0)         
-pos_y_low dw MAX_ELEMENTS DUP(0)          
+obstacle_str_offset dw 0                  ; qual objeto desenhar
 
-str_int_color db 02h
-score_points dw 0
-active_count dw 0     ; elements to draw/update
+; variaveis player
 lives db 3
+score_points dw 0
 shooting db 1
-has_moved db 0
 
-direction db MAX_ELEMENTS DUP(IDLE)
-speed_high dw MAX_ELEMENTS DUP(0)
-speed_low dw MAX_ELEMENTS DUP(15000)   ; x/65535
-
-; ------------------------------------
+; cor texto
+str_int_color db 02h
 
 ; strings ----------------------------
-
 start db "Jogar$"
 exit db "Sair$"
 

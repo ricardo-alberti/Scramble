@@ -22,8 +22,8 @@ SETUP_STATUS_BAR proc
     mov bx, 125
 DRAW_LIFE: 
     push cx
-    mov cl, 0
-    mov ch, LIFE_DIM
+    mov cx, 0
+    mov al, LIFE_DIM
     mov si, offset life
     call DRAW_SPRITE
     add bx, 29
@@ -84,8 +84,8 @@ UPDATE_LIVES proc
     push si
 
     mov bx, 125
-    mov cl, 0
-    mov ch, ENTITY_DIM
+    mov cx, 0
+    mov al, ENTITY_DIM
     mov si, offset empty_sprite
     call DRAW_SPRITE
     add bx, 29
@@ -102,8 +102,8 @@ UPDATE_LIVES proc
     mov bx, 125
 DRAW_PLAYER_LIFE: 
     push cx
-    mov cl, 0
-    mov ch, LIFE_DIM
+    mov cx, 0
+    mov al, LIFE_DIM
     mov si, offset life
     call DRAW_SPRITE
     add bx, 29
@@ -132,7 +132,7 @@ UPDATE_SCORE proc
     ; atualiza o score
     add [score_points], ax
 
-    ; conta os dígitos
+    ; conta os digitos
     mov ax, [score_points]
     xor cx, cx
 
@@ -147,7 +147,7 @@ count_digits:
     ; coluna base = 10
     ; coluna = 10 - (cx - 1)
     mov dl, 11
-    sub dl, cl    ; cl = numero de dígitos
+    sub dl, cl    ; cl = numero de digitos
     inc dl        ; ajustar o recuo
 
     mov dh, 0
@@ -158,4 +158,4 @@ count_digits:
     mov bl, 02h
     call ESC_UINT16
     ret
-UPDATE_SCORE endp
+    UPDATE_SCORE endp

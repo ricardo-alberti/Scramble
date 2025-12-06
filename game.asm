@@ -1,12 +1,9 @@
 ; game.asm
 
 ; status HUD
-INCLUDE status.asm
-INCLUDE sectors.asm
-INCLUDE collide.asm ; detecção de colisão
-
-;DRAW_PLANET proc
-;DRAW_PLANET endp
+INCLUDE status.asm  ; barra de status
+INCLUDE sectors.asm ; inicializacao de setores
+INCLUDE collide.asm ; deteccao de colisao
 
 DRAW_GAME proc
 
@@ -26,33 +23,37 @@ NEXT_SECTOR:
 SECTOR_LOOP:
     call RESOLVE_INPUT
     call UPDATE_TIMER
-
+    
+    ; se jogador sem vidas = terminar jogo
     mov bl, [lives]
     xor bh, bh
     cmp bx, 0
     je END_GAME_OVER
-    ; if timer 0 go to next sector
 
+    ; se timer for 0 = proximo nivel
     mov bl, [current_timer]
     xor bh, bh
     cmp bx, 0
     je NEXT_SECTOR
 
-    ; update positions and draw elements
+    ; atualizar entidades e redesenhar elas
     xor si, si
-    mov cx, [active_count]
+    mov cx, MAX_ELEMENTS
 UPDATE_ELEMENTS:
-
-    call UPDATE_POS      ; input si -> offset do elemento
-    call RESOLVE_COLLISION ; input si -> offset do elemento
-    mov bl, [has_moved]
-    cmp bl, 0           ; if no movement dont draw
+    call UPDATE_POS        ; atualizar posicao do elemento
+    call RESOLVE_COLLISION ; atualizar direcao do jet
+    
+    call UPDATE_BULLETS
+    call CHECK_BULLET_COLLISION
+    
+    mov bl, [has_moved]    ; somente redesenhar entidade se ela tiver sido atualizada
+    cmp bl, 0           
     je CONTINUE
 
     push si
     push cx
     mov bx, [pos_x_high + si]
-    mov cl, [pos_y_high + si]
+    mov cx, [pos_y_high + si]
 
     cmp si, 0
     je SET_JET_SPRITE
@@ -70,14 +71,13 @@ SET_PLANET_SPRITE:
 SET_OBSTACLE_SPRITE:
     mov si, [obstacle_str_offset]
 DRAW:
-    mov ch, ENTITY_DIM
+    mov al, ENTITY_DIM
     call DRAW_SPRITE
     pop cx
     pop si
 CONTINUE:
     add si, 2
     loop UPDATE_ELEMENTS
-
     jmp SECTOR_LOOP
 ; -----------------------
 
@@ -93,15 +93,208 @@ EXIT_UPD_GAME:
     ret
 DRAW_GAME endp
 
-; maps input to jet direction
+; disparar tiro
+FIRE_BULLET proc
+    push ax
+    push bx
+    push cx
+    push si
+    
+    ; Encontrar bala inativa
+    mov si, 0
+FIND_INACTIVE:
+    cmp [bullet_active + si], 0
+    je FOUND_INACTIVE
+    inc si
+    cmp si, MAX_BULLETS
+    jl FIND_INACTIVE
+    jmp EXIT_FIRE  ; todas balas ativas
+    
+FOUND_INACTIVE:
+    ; Posicionar bala na frente do jato
+    mov ax, [pos_x_high]   ; X do jato
+    add ax, ENTITY_WIDTH   ; frente do jato
+    mov [bullet_x + si], ax
+    
+    mov ax, [pos_y_high]   ; Y do jato
+    add ax, ENTITY_HEIGHT/2 ; centro vertical
+    mov [bullet_y + si], ax
+    
+    ; Ativar bala
+    mov [bullet_active + si], 1
+    
+EXIT_FIRE:
+    pop si
+    pop cx
+    pop bx
+    pop ax
+    ret
+FIRE_BULLET endp
+
+; Atualizar e desenhar balas
+UPDATE_BULLETS proc
+    push ax
+    push bx
+    push cx
+    push si
+    
+    mov si, 0
+UPDATE_BULLET_LOOP:
+    cmp [bullet_active + si], 0
+    je NEXT_BULLET
+    
+    push ax
+    push bx
+    push cx
+    mov bx, [bullet_x + si]
+    sub bx, bullet_speed  ; posicao anterior
+    mov cx, [bullet_y + si]
+    call CLEAR_BULLET
+    pop cx
+    pop bx
+    pop ax
+    
+    ; mover bala para direita
+    mov ax, [bullet_x + si]
+    add ax, bullet_speed
+    mov [bullet_x + si], ax
+    
+    ; verificar se saiu da tela
+    cmp ax, SCREEN_WIDTH
+    jb DRAW_BULLET
+    
+    ; desativar bala
+    mov [bullet_active + si], 0
+    jmp NEXT_BULLET
+    
+DRAW_BULLET:
+    ; desenhar bala
+    mov bx, [bullet_x + si]
+    mov cx, [bullet_y + si]
+    
+    ; usar DRAW_SPRITE com dimensoes do tiro
+    push si
+    mov si, offset bullet_sprite
+    call DRAW_BULLET_PIXELS
+    pop si
+    
+NEXT_BULLET:
+    inc si
+    cmp si, MAX_BULLETS
+    jl UPDATE_BULLET_LOOP
+    
+    pop si
+    pop cx
+    pop bx
+    pop ax
+    ret
+UPDATE_BULLETS endp
+
+; limpar tiros
+CLEAR_BULLET proc
+    push ax
+    push bx
+    push cx
+    push di
+    push es
+    
+    ; calcular endereco
+    mov ax, cx  ; Y
+    mov dx, 320
+    mul dx
+    add ax, bx  ; + X
+    mov di, ax
+    
+    mov ax, VIDEO_SEG
+    mov es, ax
+    
+    ; apagar 4x4 pixels (preto)
+    mov al, 0  ; preto
+    
+    ; apagar 4 linhas
+    mov cx, 4
+CLEAR_BULLET_LOOP:
+    mov es:[di], al
+    mov es:[di+1], al
+    mov es:[di+2], al
+    mov es:[di+3], al
+    add di, 320
+    loop CLEAR_BULLET_LOOP
+    
+    pop es
+    pop di
+    pop cx
+    pop bx
+    pop ax
+    ret
+CLEAR_BULLET endp
+
+; desenhar tiro 
+DRAW_BULLET_PIXELS proc
+    push ax
+    push bx
+    push cx
+    push dx
+    push di
+    
+    ; Calcular endereco inicial
+    mov ax, cx  ; Y
+    mov dx, 320
+    mul dx
+    add ax, bx  ; + X
+    mov di, ax
+    
+    mov ax, VIDEO_SEG
+    mov es, ax
+    
+    ; Desenhar 4x4 pixels quadrado
+    mov al, 0Fh  ; branco
+    
+    ; Linha 0
+    mov es:[di], al
+    mov es:[di+1], al
+    mov es:[di+2], al
+    mov es:[di+3], al
+    
+    ; Linha 1
+    add di, 320
+    mov es:[di], al
+    mov es:[di+1], al
+    mov es:[di+2], al
+    mov es:[di+3], al
+    
+    ; Linha 2
+    add di, 320
+    mov es:[di], al
+    mov es:[di+1], al
+    mov es:[di+2], al
+    mov es:[di+3], al
+    
+    ; Linha 3
+    add di, 320
+    mov es:[di], al
+    mov es:[di+1], al
+    mov es:[di+2], al
+    mov es:[di+3], al
+    
+    pop di
+    pop dx
+    pop cx
+    pop bx
+    pop ax
+    ret
+DRAW_BULLET_PIXELS endp
+
+; mapear input para troca de direcao do player
 RESOLVE_INPUT proc
-    mov [shooting], 0     ; default: not shooting
+    mov [shooting], 0    ; parar de atirar 
+    mov ax, [direction]  ; manter direcao antiga por padrao
 
 READ_KEYS:
-    ; Check if a key is waiting (AH=01h)
+    ; checar se tem input no teclado
     mov ah, 01h
     int 16h
-    jz RESOLVED               ; no more keys -> exit
+    jz RESOLVED
 
     ; Read key (AH=00h)
     mov ah, 00h
@@ -129,17 +322,19 @@ RES_SPACE:
     cmp ah, KEY_SPACE
     jne READ_KEYS
     mov [shooting], 1
-    jmp READ_KEYS
+    call FIRE_BULLET
+    jmp RESOLVED
 
 RESOLVED:
-    mov [direction], al   ; apply movement mask
+    xor ah, ah
+    mov [direction], ax   ; apply movement mask
     ret
 RESOLVE_INPUT endp
 
 ; Input:
 ; SI = offset (index * 2)
 ; Output:
-; has_moved = 1 or 0 (elementos que foram movidos são redesenhados)
+; has_moved = 1 or 0 (elementos que foram movidos sao redesenhados)
 UPDATE_POS PROC
     push ax
     push bx
@@ -153,19 +348,16 @@ UPDATE_POS PROC
     ;----------------------------------
     ; LOAD DIRECTION for this object
     ;----------------------------------
-    mov bx, si
-    mov bl, [direction + bx]
+    mov bx, [direction + si]
 
     ;----------------------------------
     ; HORIZONTAL MOVEMENT
     ;----------------------------------
-
-    ; Load X position
     mov ax, [pos_x_low  + si]
     mov dx, [pos_x_high + si]
 
 CHECK_RIGHT:
-    test bl, RIGHT
+    test bx, RIGHT
     jz CHECK_LEFT
 
     add ax, [speed_low  + si]
@@ -189,7 +381,7 @@ block_right:
     jmp STORE_X
 
 CHECK_LEFT:
-    test bl, LEFT
+    test bx, LEFT
     jz STORE_X
 
     sub ax, [speed_low  + si]
@@ -211,7 +403,7 @@ block_left:
     jmp STORE_X
 
 STORE_X:
-    mov cx, [pos_x_high]
+    mov cx, [pos_x_high + si]
     cmp cx, dx
     je SAVE_X
     mov [has_moved], 1
@@ -223,44 +415,40 @@ SAVE_X:
     ;----------------------------------
     ; VERTICAL MOVEMENT
     ;----------------------------------
-
     mov ax, [pos_y_low  + si]
-    mov dl, [pos_y_high + si]
+    mov dx, [pos_y_high + si]
 
 CHECK_UP:
-    test bl, UP
+    test bx, UP
     jz CHECK_DOWN
 
     sub ax, [speed_low  + si]
     sbb dx, [speed_high + si]
-    xor dh, dh
 
     cmp dx, SCREEN_TOP_LIMIT
     jae STORE_Y
     mov dx, SCREEN_TOP_LIMIT
 
 CHECK_DOWN:
-    test bl, DOWN
+    test bx, DOWN
     jz STORE_Y
 
     add ax, [speed_low  + si]
     adc dx, [speed_high + si]
-    xor dh, dh
 
     cmp dx, SCREEN_HEIGHT - ENTITY_HEIGHT
     jb STORE_Y
     mov dx, SCREEN_HEIGHT - ENTITY_HEIGHT
 
 STORE_Y:
-    mov cl, [pos_y_high]
-    xor ch, ch
+    mov cx, [pos_y_high + si]
     cmp cx, dx
     je SAVE_Y
     mov [has_moved], 1
 
 SAVE_Y:
     mov [pos_y_low  + si], ax
-    mov [pos_y_high + si], dl
+    mov [pos_y_high + si], dx
 
     pop di
     pop si
@@ -367,8 +555,8 @@ SPAWN_RIGHT proc
     push cx
     push si
     mov bx, [pos_x_high + si]
-    mov cl, [pos_y_high + si]
-    mov ch, ENTITY_DIM
+    mov cx, [pos_y_high + si]
+    ;mov ch, ENTITY_DIM
     mov si, offset empty_sprite 
     call DRAW_SPRITE
 
@@ -376,13 +564,13 @@ SPAWN_RIGHT proc
     pop cx
     pop bx
 
-    mov bx, 8  ; limit random number
+    mov bx, 5  ; limit random number
     call GET_RANDOM_VALUE  ; ax = random value
-    mov bx, ENTITY_HEIGHT + 5   ; distance between obstacles
+    mov bx, ENTITY_HEIGHT + ENTITY_HEIGHT + 5   ; distance between obstacles
     mul bx
     add ax, SCREEN_TOP_LIMIT
     mov dx, SCREEN_WIDTH - ENTITY_WIDTH
-    mov [pos_y_high + si], al
+    mov [pos_y_high + si], ax
     mov [pos_x_high + si], SCREEN_WIDTH - ENTITY_WIDTH
 
 

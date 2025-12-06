@@ -28,10 +28,10 @@ GET_RANDOM_VALUE proc
     push DX
     
     ; retrieves DOS maintained clock time
-	; CH = hour (0-23)
-	; CL = minutes (0-59)
-	; DH = seconds (0-59)
-	; DL = hundredths (0-99)
+    ; CH = hour (0-23)
+    ; CL = minutes (0-59)
+    ; DH = seconds (0-59)
+    ; DL = hundredths (0-99)
     mov ah, 2Ch 
     int 21h 
     
@@ -68,7 +68,7 @@ DRAW_BUTTON proc
     ret
 DRAW_BUTTON endp 
 
-; Desenha retângulo
+; Desenha retangulo
 ; Input:
 ; (largura e altura fixas)
 ; BL = color
@@ -79,7 +79,7 @@ DRAW_REC PROC
     push cx
     push dx
     
-    ; ┌
+    ; ???
     xor BH, BH
     call SET_POS_CURSOR
     mov AL, 218     
@@ -87,7 +87,7 @@ DRAW_REC PROC
     mov AH, 0AH
     int 10h
     
-    ; ──────── 
+    ; ???????????????????????? 
     inc DL
     call SET_POS_CURSOR
     mov AL, 196
@@ -95,7 +95,7 @@ DRAW_REC PROC
     mov AH, 0AH
     int 10h
     
-    ; ┐
+    ; ???
     add DL, CL
     call SET_POS_CURSOR
     mov AL, 191 
@@ -103,7 +103,7 @@ DRAW_REC PROC
     mov AH, 0AH
     int 10h
     
-    ; │ (right)
+    ; ??? (right)
     inc DH
     call SET_POS_CURSOR
     mov AL, 179 
@@ -111,7 +111,7 @@ DRAW_REC PROC
     mov AH, 0AH
     int 10h
     
-    ; ┘
+    ; ???
     inc DH
     call SET_POS_CURSOR
     mov AL, 217
@@ -119,7 +119,7 @@ DRAW_REC PROC
     mov AH, 0AH
     int 10h
     
-    ; ──────── (bottom)
+    ; ???????????????????????? (bottom)
     mov CX, 8
     sub DL, CL
     call SET_POS_CURSOR
@@ -127,7 +127,7 @@ DRAW_REC PROC
     mov AH, 0AH
     int 10h
 
-    ; └
+    ; ???
     mov CX, 1
     mov AL, 192  
     mov AH, 0AH
@@ -149,7 +149,7 @@ DRAW_REC endp
 
 ; Preenche tela com cor a partir de y
 ; Input: 
-; cl = y
+; cx = y
 ; bl = color
 FILL_REC proc
     push ax
@@ -157,8 +157,6 @@ FILL_REC proc
     push dx
     push di
 
-    xor ch, ch
-    
     xor ax, ax    
     mov ax, cx
     mov dx, 320
@@ -213,7 +211,7 @@ DELAY proc
     pop ax
 DELAY endp
 
-; Lê teclado
+; Le teclado
 ; Output:
 ; AL = ASCII, AH = scan code
 GET_INPUT proc
@@ -230,7 +228,7 @@ NO_KEY:
 GET_INPUT endp
 
 
-; Preenche área da memória de vídeo com 0 (preto)
+; Preenche area da memoria de video com 0 (preto)
 CLEAR_SCREEN proc
     push ax
     push cx
@@ -272,8 +270,8 @@ CALC_ADDRESS endp
 
 ; Input:
 ; si = sprite source index
-; ch = offset dimensão do sprite (largura e altura) 
-; cl = y
+; al = offset dimensao do sprite (largura e altura) 
+; cx = y
 ; bx = x
 DRAW_SPRITE proc
     push ax
@@ -284,27 +282,23 @@ DRAW_SPRITE proc
     push si
     push bp
 
+    push ax
     mov ax, VIDEO_SEG
     mov es, ax
 
-    push cx
-    xor ch, ch
     xor ax, ax    
     mov ax, cx
     mov dx, 320
     mul dx        ; AX = row*320
     add ax, bx
     mov di, ax
-    pop cx
+    pop ax
 
     push si
-    push cx
-    mov cl, ch ; teste
-    xor ch, ch
-    mov si, cx
+    xor ah, ah
+    mov si, ax
     mov bl, [sprites_dim + si]     ; largura
     mov bh, [sprites_dim + si + 1] ; altura
-    pop cx
     pop si
 
     mov cl, bh   ; outer loop: rows
@@ -335,9 +329,9 @@ NEXT_PIXEL:
     ret
 DRAW_SPRITE endp
 
-; video mode 320 × 200 (video mode = 13h)
+; video mode 320 x 200 (video mode = 13h)
 ; 1 pixel = 1 byte
-; memory used by the video screen = 320 × 200 = 64.000 bytes.
+; memory used by the video screen = 320 x 200 = 64.000 bytes.
 INIT_WINDOW proc
     push ax
     mov ah, 00H
@@ -399,7 +393,7 @@ GET_STR_SIZE endp
 
 ;------------------------------------------------------------
 ; ESC_UINT16
-; Escreve AX como número decimal na posição atual do cursor
+; Escreve AX como numero decimal na posicao atual do cursor
 ;------------------------------------------------------------
 ESC_UINT16 proc
     push ax
@@ -408,25 +402,25 @@ ESC_UINT16 proc
     push dx
 
     mov bx, 10
-    xor cx, cx        ; contador de dígitos
+    xor cx, cx        ; contador de digitos
 
-;--- converte número empilhando dígitos ---
+;--- converte numero empilhando digitos ---
 conv_loop:
     xor dx, dx
-    div bx            ; AX / 10 → quociente em AX, resto em DX
-    push dx           ; empilha o dígito
+    div bx            ; AX / 10 -> quociente em AX, resto em DX
+    push dx           ; empilha o digito
     inc cx
     test ax, ax
     jnz conv_loop
 
-;--- imprime os dígitos desempilhando ---
+;--- imprime os digitos desempilhando ---
 print_loop:
     pop dx
     add dl, '0'       ; converte para ASCII
 
     mov ah, 0Eh       ; teletype BIOS
     mov al, dl
-    mov bh, 0         ; página
+    mov bh, 0         ; pagina
     mov bl, [str_int_color]
     int 10h
 

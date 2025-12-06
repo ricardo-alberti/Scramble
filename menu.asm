@@ -61,9 +61,9 @@ TURN_RIGHT:
 MOVE_CONTINUE:
     call UPDATE_POS
     mov bx, [pos_x_high + si]
-    mov cl, [pos_y_high + si]
-    mov ch, ENTITY_DIM
+    mov cx, [pos_y_high + si]
     mov si, offset alien
+    mov al, ENTITY_DIM
     call DRAW_SPRITE
 
     ; jet
@@ -73,8 +73,8 @@ MOVE_CONTINUE:
     call UPDATE_POS
 
     mov bx, [pos_x_high]
-    mov cl, [pos_y_high]
-    mov ch, ENTITY_DIM
+    mov cx, [pos_y_high]
+    mov al, ENTITY_DIM
     mov si, offset jet
     call DRAW_SPRITE
 
@@ -84,8 +84,8 @@ MOVE_CONTINUE:
     mov [direction + si], LEFT    ; move left
     call UPDATE_POS
     mov bx, [pos_x_high + si]
-    mov cl, [pos_y_high + si]
-    mov ch, ENTITY_DIM
+    mov cx, [pos_y_high + si]
+    mov al, ENTITY_DIM
     mov si, offset meteor
     call DRAW_SPRITE
 

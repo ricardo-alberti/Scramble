@@ -112,3 +112,10 @@ mountain db 6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 6, 6, 6, 0, 0, 0, 0, 0, 0, 0, 0, 0,
          db 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6
 
 planet db 29*13 DUP(0)
+
+bullet_sprite db 0Fh, 0Fh, 0Fh, 0Fh
+              db 0Fh, 0Fh, 0Fh, 0Fh
+              db 0Fh, 0Fh, 0Fh, 0Fh
+              db 0Fh, 0Fh, 0Fh, 0Fh
+
+bullet_dim db 4, 4  ; dimensoes do tiro
