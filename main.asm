@@ -30,11 +30,11 @@ TERRAIN_LENGTH equ 40  ; 320/8 = 40 blocos de 8 pixels
 terrain_heights db TERRAIN_LENGTH DUP(0)
 
 MAX_BULLETS    equ 3
-bullet_active  db MAX_BULLETS DUP(0)
+bullet_active  dw MAX_BULLETS DUP(0)
 bullet_x_high  dw MAX_BULLETS DUP(0)
 bullet_x_low   dw MAX_BULLETS DUP(0)
 bullet_y       dw MAX_BULLETS DUP(0)
-BULLET_SPEED   equ 5000
+BULLET_SPEED   equ 2000
 
 BRICK_COLUMN_HEIGHT equ 80
 
@@ -100,7 +100,6 @@ obstacle_str_offset dw 0                  ; qual objeto desenhar
 ; variaveis player
 lives db 3
 score_points dw 0
-shooting db 1
 
 ; cor texto
 str_int_color db 02h
@@ -139,10 +138,9 @@ game_over db "            ___                        ", CR, LF
 
 .code  
 
-; procs are pasted here by the linker
-INCLUDE platform.asm ; platform layer
-INCLUDE game.asm     ; game logic
-INCLUDE menu.asm
+INCLUDE platform.asm ; procs basicas
+INCLUDE game.asm     ; logica do jogo / desenhar elementos
+INCLUDE menu.asm     ; proc para desenhar menu
 
 MAIN:   
     mov ax, @data

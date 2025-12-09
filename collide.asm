@@ -99,11 +99,9 @@ CHECK_BULLET_COLLISION proc
 BULLET_LOOP:
     cmp [bullet_active + si], 0
     je NEXT_BULLET_CHECK
-    
     ; posicao da bala
     mov ax, [bullet_x_high + si]
     mov bx, [bullet_y + si]
-    
     ; verificar colisao com cada alien (offsets 4, 6, 8)
     mov di, 4
     mov cx, 3  ; 3 aliens
@@ -131,24 +129,19 @@ ALIEN_LOOP:
     ; destruir alien
     push si
     push di
-
     mov bx, [bullet_x_high + si]
     mov cx, [bullet_y + si]
     mov si, offset empty_sprite
     mov al, BULLET_Dim
     call DRAW_SPRITE
-    
     ; limpar sprite do alien
     mov bx, [pos_x_high + di]
     mov cx, [pos_y_high + di]
-    mov si, offset empty_sprite
     mov al, ENTITY_DIM
     call DRAW_SPRITE
-    
     ; reposicionar alien
     mov si, di  ; indice do alien
     call SPAWN_RIGHT
-    
     pop di
     pop si
     
@@ -177,7 +170,7 @@ NO_COLLISION_WITH_THIS:
     loop ALIEN_LOOP
     
 NEXT_BULLET_CHECK:
-    inc si
+    add si, 1
     cmp si, MAX_BULLETS
     jl BULLET_LOOP
     

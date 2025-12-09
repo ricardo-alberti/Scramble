@@ -99,13 +99,13 @@ FIRE_BULLET proc
     push si
     
     ; Encontrar bala inativa
-    mov si, 0
+    xor si, si
+    mov cx, MAX_BULLETS
 FIND_INACTIVE:
     cmp [bullet_active + si], 0
     je FOUND_INACTIVE
-    inc si
-    cmp si, MAX_BULLETS
-    jl FIND_INACTIVE
+    add si, 2
+    loop FIND_INACTIVE
     jmp EXIT_FIRE  ; todas balas ativas
     
 FOUND_INACTIVE:
@@ -136,8 +136,10 @@ UPDATE_BULLETS proc
     push cx
     push si
     
-    mov si, 0
+    xor si, si
+    mov cx, MAX_BULLETS
 UPDATE_BULLET_LOOP:
+    push cx
     cmp [bullet_active + si], 0
     je NEXT_BULLET
     
@@ -146,13 +148,9 @@ UPDATE_BULLET_LOOP:
     adc [bullet_x_high + si], 0
     
     ; verificar se saiu da tela
-    cmp [bullet_x_high], SCREEN_WIDTH - BULLET_WIDTH
+    cmp [bullet_x_high + si], SCREEN_WIDTH - BULLET_WIDTH
     jae CLEAR
     jmp DRAW_BULLET
-    
-    ; desativar bala
-    mov [bullet_active + si], 0
-    jmp NEXT_BULLET
     
 DRAW_BULLET:
     ; desenhar bala
@@ -179,9 +177,9 @@ CLEAR:
     pop si
     
 NEXT_BULLET:
-    inc si
-    cmp si, MAX_BULLETS
-    jl UPDATE_BULLET_LOOP
+    add si, 2
+    pop cx
+    loop UPDATE_BULLET_LOOP
     
     pop si
     pop cx
@@ -190,48 +188,8 @@ NEXT_BULLET:
     ret
 UPDATE_BULLETS endp
 
-; limpar tiros
-CLEAR_BULLET proc
-    push ax
-    push bx
-    push cx
-    push di
-    push es
-    
-    ; calcular endereco
-    mov ax, cx  ; Y
-    mov dx, 320
-    mul dx
-    add ax, bx  ; + X
-    mov di, ax
-    
-    mov ax, VIDEO_SEG
-    mov es, ax
-    
-    ; apagar 4x4 pixels (preto)
-    mov al, 0  ; preto
-    
-    ; apagar 4 linhas
-    mov cx, 4
-CLEAR_BULLET_LOOP:
-    mov es:[di], al
-    mov es:[di+1], al
-    mov es:[di+2], al
-    mov es:[di+3], al
-    add di, 320
-    loop CLEAR_BULLET_LOOP
-    
-    pop es
-    pop di
-    pop cx
-    pop bx
-    pop ax
-    ret
-CLEAR_BULLET endp
-
 ; mapear input para troca de direcao do player
 RESOLVE_INPUT proc
-    mov [shooting], 0    ; parar de atirar 
     mov ax, [direction]  ; manter direcao antiga por padrao
 
 READ_KEYS:
@@ -265,8 +223,8 @@ RES_DOWN:
 RES_SPACE:
     cmp ah, KEY_SPACE
     jne READ_KEYS
-    mov [shooting], 1
     call FIRE_BULLET
+    mov ax, [direction]
     jmp RESOLVED
 
 RESOLVED:
