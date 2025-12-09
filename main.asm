@@ -45,7 +45,7 @@ sprites_dim db ENTITY_WIDTH, ENTITY_HEIGHT
             db BULLET_WIDTH, BULLET_HEIGHT
 
 ; constantes do jogo
-SECTOR_TIME   equ 10
+SECTOR_TIME   equ 60
 FIRST_SECTOR  equ -2
 LAST_SECTOR   equ 4
 
@@ -68,7 +68,7 @@ current_rtc db 0          ; BIOS real time clock passed
 has_moved db 0            ; flag usada para otimizacao (apenas elementos movidos sao redesenhados)
 
 ; offset das entidades 
-MAX_ELEMENTS     equ 29
+MAX_ELEMENTS     equ 28
 JET_OFFSET       equ 0
 OBSTACLE_OFFSET  equ 2
 PLANET_OFFSET    equ 8

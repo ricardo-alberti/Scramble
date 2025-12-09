@@ -79,6 +79,7 @@ EXIT_TIMER:
 UPDATE_TIMER endp
 
 UPDATE_LIVES proc
+    push ax
     push bx
     push cx
     push si
@@ -95,6 +96,9 @@ UPDATE_LIVES proc
 
     ; dec lives
     mov cl, [lives]
+    xor ch, ch
+    cmp cx, 1
+    jbe DIE
     dec cl
     mov [lives], cl
     cmp cx, 0
@@ -109,11 +113,16 @@ DRAW_PLAYER_LIFE:
     add bx, 29
     pop cx
     loop DRAW_PLAYER_LIFE
+    jmp EXIT_UPD_LIVES
+
+DIE:
+    mov [lives], 0
 
 EXIT_UPD_LIVES:
     pop si
     pop cx
     pop bx
+    pop ax
     ret
 UPDATE_LIVES endp
 

@@ -52,7 +52,8 @@ SET_BLOCK:
     mov [speed_low + si], SPEED_PLANET
     mov [direction + si], LEFT
     add si, 2
-    loop SET_COLUMN_BLOCKS
+    dec cl
+    jnz SET_COLUMN_BLOCKS
 
     mov di, [block_types + di + 2]
     mov [block_type + si - PLANET_OFFSET - 2], di
