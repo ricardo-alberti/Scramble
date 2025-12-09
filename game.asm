@@ -65,8 +65,6 @@ SET_JET_SPRITE:
     jmp DRAW 
 SET_PLANET_SPRITE:
     mov si, offset planet 
-    ;call DRAW_PLANET
-    ;jmp .continue
     jmp DRAW
 SET_OBSTACLE_SPRITE:
     mov si, [obstacle_str_offset]
@@ -114,7 +112,7 @@ FOUND_INACTIVE:
     ; Posicionar bala na frente do jato
     mov ax, [pos_x_high]   ; X do jato
     add ax, ENTITY_WIDTH   ; frente do jato
-    mov [bullet_x + si], ax
+    mov [bullet_x_high + si], ax
     
     mov ax, [pos_y_high]   ; Y do jato
     add ax, ENTITY_HEIGHT/2 ; centro vertical
@@ -143,25 +141,14 @@ UPDATE_BULLET_LOOP:
     cmp [bullet_active + si], 0
     je NEXT_BULLET
     
-    push ax
-    push bx
-    push cx
-    mov bx, [bullet_x + si]
-    sub bx, bullet_speed  ; posicao anterior
-    mov cx, [bullet_y + si]
-    call CLEAR_BULLET
-    pop cx
-    pop bx
-    pop ax
-    
     ; mover bala para direita
-    mov ax, [bullet_x + si]
-    add ax, bullet_speed
-    mov [bullet_x + si], ax
+    add [bullet_x_low + si], bullet_speed
+    adc [bullet_x_high + si], 0
     
     ; verificar se saiu da tela
-    cmp ax, SCREEN_WIDTH
-    jb DRAW_BULLET
+    cmp [bullet_x_high], SCREEN_WIDTH - BULLET_WIDTH
+    jae CLEAR
+    jmp DRAW_BULLET
     
     ; desativar bala
     mov [bullet_active + si], 0
@@ -169,13 +156,26 @@ UPDATE_BULLET_LOOP:
     
 DRAW_BULLET:
     ; desenhar bala
-    mov bx, [bullet_x + si]
+    mov bx, [bullet_x_high + si]
     mov cx, [bullet_y + si]
     
     ; usar DRAW_SPRITE com dimensoes do tiro
     push si
     mov si, offset bullet_sprite
-    call DRAW_BULLET_PIXELS
+    mov al, BULLET_DIM
+    call DRAW_SPRITE
+    pop si
+
+    jmp NEXT_BULLET
+
+CLEAR:
+    mov bx, [bullet_x_high + si]
+    mov cx, [bullet_y + si]
+    mov al, BULLET_DIM
+    mov [bullet_active + si], 0
+    push si
+    mov si, offset empty_sprite
+    call DRAW_SPRITE
     pop si
     
 NEXT_BULLET:
@@ -228,62 +228,6 @@ CLEAR_BULLET_LOOP:
     pop ax
     ret
 CLEAR_BULLET endp
-
-; desenhar tiro 
-DRAW_BULLET_PIXELS proc
-    push ax
-    push bx
-    push cx
-    push dx
-    push di
-    
-    ; Calcular endereco inicial
-    mov ax, cx  ; Y
-    mov dx, 320
-    mul dx
-    add ax, bx  ; + X
-    mov di, ax
-    
-    mov ax, VIDEO_SEG
-    mov es, ax
-    
-    ; Desenhar 4x4 pixels quadrado
-    mov al, 0Fh  ; branco
-    
-    ; Linha 0
-    mov es:[di], al
-    mov es:[di+1], al
-    mov es:[di+2], al
-    mov es:[di+3], al
-    
-    ; Linha 1
-    add di, 320
-    mov es:[di], al
-    mov es:[di+1], al
-    mov es:[di+2], al
-    mov es:[di+3], al
-    
-    ; Linha 2
-    add di, 320
-    mov es:[di], al
-    mov es:[di+1], al
-    mov es:[di+2], al
-    mov es:[di+3], al
-    
-    ; Linha 3
-    add di, 320
-    mov es:[di], al
-    mov es:[di+1], al
-    mov es:[di+2], al
-    mov es:[di+3], al
-    
-    pop di
-    pop dx
-    pop cx
-    pop bx
-    pop ax
-    ret
-DRAW_BULLET_PIXELS endp
 
 ; mapear input para troca de direcao do player
 RESOLVE_INPUT proc

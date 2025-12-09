@@ -19,6 +19,9 @@ BLOCK_WIDTH   equ 24
 BLOCK_HEIGHT  equ 16
 LIFE_WIDTH    equ 19
 LIFE_HEIGHT   equ 7
+BULLET_WIDTH  equ 4
+BULLET_HEIGHT  equ 4
+
 SCREEN_WIDTH  equ 320
 SCREEN_HEIGHT equ 200
 SCREEN_TOP_LIMIT equ 20   ; limitar movimento y
@@ -28,18 +31,21 @@ terrain_heights db TERRAIN_LENGTH DUP(0)
 
 MAX_BULLETS    equ 3
 bullet_active  db MAX_BULLETS DUP(0)
-bullet_x       dw MAX_BULLETS DUP(0)
+bullet_x_high  dw MAX_BULLETS DUP(0)
+bullet_x_low   dw MAX_BULLETS DUP(0)
 bullet_y       dw MAX_BULLETS DUP(0)
-bullet_speed   equ 5
+BULLET_SPEED   equ 5000
 
 BRICK_COLUMN_HEIGHT equ 80
 
 ENTITY_DIM    equ 0
 PLANET_DIM    equ 2
 LIFE_DIM      equ 4
+BULLET_DIM    equ 6
 sprites_dim db ENTITY_WIDTH, ENTITY_HEIGHT
             db BLOCK_WIDTH, BLOCK_HEIGHT
             db LIFE_WIDTH, LIFE_HEIGHT
+            db BULLET_WIDTH, BULLET_HEIGHT
 
 ; constantes do jogo
 SECTOR_TIME   equ 15

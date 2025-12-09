@@ -101,7 +101,7 @@ BULLET_LOOP:
     je NEXT_BULLET_CHECK
     
     ; posicao da bala
-    mov ax, [bullet_x + si]
+    mov ax, [bullet_x_high + si]
     mov bx, [bullet_y + si]
     
     ; verificar colisao com cada alien (offsets 4, 6, 8)
@@ -131,6 +131,12 @@ ALIEN_LOOP:
     ; destruir alien
     push si
     push di
+
+    mov bx, [bullet_x_high + si]
+    mov cx, [bullet_y + si]
+    mov si, offset empty_sprite
+    mov al, BULLET_Dim
+    call DRAW_SPRITE
     
     ; limpar sprite do alien
     mov bx, [pos_x_high + di]
