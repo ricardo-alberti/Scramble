@@ -72,8 +72,8 @@ has_moved db 0            ; flag usada para otimizacao (apenas elementos movidos
 ; offset das entidades 
 MAX_ELEMENTS     equ 5
 JET_OFFSET       equ 0
-PLANET_OFFSET    equ 2
-OBSTACLE_OFFSET  equ 4
+OBSTACLE_OFFSET  equ 2
+PLANET_OFFSET    equ 8
 ; componentes das entidades   
 pos_x_high dw MAX_ELEMENTS DUP(0)
 pos_x_low dw MAX_ELEMENTS DUP(0)          

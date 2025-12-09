@@ -55,10 +55,10 @@ UPDATE_ELEMENTS:
     mov bx, [pos_x_high + si]
     mov cx, [pos_y_high + si]
 
-    cmp si, 0
+    cmp si, JET_OFFSET
     je SET_JET_SPRITE
-    cmp si, 2
-    je SET_PLANET_SPRITE
+    cmp si, PLANET_OFFSET
+    jae SET_PLANET_SPRITE
     jmp SET_OBSTACLE_SPRITE
 SET_JET_SPRITE:
     mov si, offset jet
@@ -190,6 +190,8 @@ UPDATE_BULLETS endp
 
 ; mapear input para troca de direcao do player
 RESOLVE_INPUT proc
+    push ax
+
     mov ax, [direction]  ; manter direcao antiga por padrao
 
 READ_KEYS:
@@ -230,9 +232,11 @@ RES_SPACE:
 RESOLVED:
     xor ah, ah
     mov [direction], ax   ; apply movement mask
+    pop ax
     ret
 RESOLVE_INPUT endp
 
+; Atualizar posição elemento si
 ; Input:
 ; SI = offset (index * 2)
 ; Output:
@@ -361,6 +365,7 @@ SAVE_Y:
     ret
 UPDATE_POS endp
 
+; Escreve fase
 ; Input:
 ; bp = str offset
 PRINT_PHASE proc
@@ -383,6 +388,7 @@ PRINT_PHASE proc
     ret
 PRINT_PHASE endp
 
+; Tela de game over ou vencedor
 ; Input:
 ; ax = 1 win or 0 loss
 END_SCREEN proc
@@ -450,15 +456,15 @@ SPAWN_RIGHT proc
     mov al, [menu_active]  ; if on menu does not spawn
     cmp al, 1
     je END_SPAWN
-    cmp si, 2    ; if planet offset returns
-    je END_SPAWN
+    cmp si, PLANET_OFFSET    ; if planet offset returns
+    jae END_SPAWN
 
     push bx
     push cx
     push si
     mov bx, [pos_x_high + si]
     mov cx, [pos_y_high + si]
-    ;mov ch, ENTITY_DIM
+    mov al, ENTITY_DIM
     mov si, offset empty_sprite 
     call DRAW_SPRITE
 
@@ -474,7 +480,6 @@ SPAWN_RIGHT proc
     mov dx, SCREEN_WIDTH - ENTITY_WIDTH
     mov [pos_y_high + si], ax
     mov [pos_x_high + si], SCREEN_WIDTH - ENTITY_WIDTH
-
 
 END_SPAWN:
     pop si

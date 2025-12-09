@@ -16,7 +16,7 @@ RESOLVE_COLLISION proc
 
 ; checar se objeto colide com player:
 cmp si, PLANET_OFFSET
-je SET_PLANET_DIM
+jae SET_PLANET_DIM
 
 SET_OBSTACLE_DIM:
     mov di, ENTITY_DIM
@@ -24,7 +24,7 @@ SET_OBSTACLE_DIM:
 
 SET_PLANET_DIM:
     mov di, PLANET_DIM
-    ; jmp RES_DETECTION  ; por enquanto ignorar colisao com terreno
+    jmp RES_DETECTION  ; por enquanto ignorar colisao com terreno
 
 SET_DIM:
     mov dl, [sprites_dim + ENTITY_DIM]     ; jet player dimension width
@@ -94,8 +94,14 @@ CHECK_BULLET_COLLISION proc
     push dx
     push si
     push di
-    
-    mov si, 0  ; indice da bala
+
+    mov si, [obstacle_str_offset]
+    cmp si, offset meteor
+    jne CONTINUE_CHECK
+    jmp FINISH_CHECK
+
+CONTINUE_CHECK:
+    xor si, si  ; indice da bala
 BULLET_LOOP:
     cmp [bullet_active + si], 0
     je NEXT_BULLET_CHECK
@@ -103,7 +109,7 @@ BULLET_LOOP:
     mov ax, [bullet_x_high + si]
     mov bx, [bullet_y + si]
     ; verificar colisao com cada alien (offsets 4, 6, 8)
-    mov di, 4
+    mov di, OBSTACLE_OFFSET
     mov cx, 3  ; 3 aliens
     
 ALIEN_LOOP:
@@ -170,10 +176,11 @@ NO_COLLISION_WITH_THIS:
     loop ALIEN_LOOP
     
 NEXT_BULLET_CHECK:
-    add si, 1
+    add si, 2
     cmp si, MAX_BULLETS
     jl BULLET_LOOP
     
+FINISH_CHECK:
     pop di
     pop si
     pop dx

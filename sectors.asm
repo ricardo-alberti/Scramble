@@ -100,7 +100,7 @@ START_SECTOR_ONE proc
     call DRAW_SPRITE
 
     ; planet
-    mov si, 2 ; offset
+    mov si, PLANET_OFFSET ; offset
     mov [pos_x_high + si], 0
     mov [pos_y_high + si], 180
     mov cx, [pos_y_high + si]
@@ -109,24 +109,24 @@ START_SECTOR_ONE proc
     mov [speed_low + si], 0
 
     ; meteor
-    mov si, 4 ; offset
+    mov si, OBSTACLE_OFFSET ; offset
     mov [speed_low + si], 1200
     mov [pos_x_high + si], SCREEN_WIDTH - ENTITY_WIDTH ; y
-    mov [pos_y_high + si], 76 ; y
+    mov [pos_y_high + si], SCREEN_TOP_LIMIT ; y
     mov [direction + si], LEFT    ; move left
 
     ; meteor
     add si, 2 ; offset
     mov [speed_low + si], 1200
-    mov [pos_x_high + si], SCREEN_WIDTH - 50 ; y
-    mov [pos_y_high + si], 76 ; y
+    mov [pos_x_high + si], SCREEN_WIDTH - 60 ; y
+    mov [pos_y_high + si], SCREEN_TOP_LIMIT + 60 ; y
     mov [direction + si], LEFT    ; move left
 
     ; meteor
     add si, 2 ; offset
     mov [speed_low + si], 1200
-    mov [pos_x_high + si], SCREEN_WIDTH - 100 ; y
-    mov [pos_y_high + si], 76 ; y
+    mov [pos_x_high + si], SCREEN_WIDTH - 120 ; y
+    mov [pos_y_high + si], SCREEN_TOP_LIMIT + 120 ; y
     mov [direction + si], LEFT    ; move left
 
     pop cx
