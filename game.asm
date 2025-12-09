@@ -5,13 +5,45 @@ INCLUDE status.asm  ; barra de status
 INCLUDE sectors.asm ; inicializacao de setores
 INCLUDE collide.asm ; deteccao de colisao
 
+; atribuir dimensão de sprite em al e offset do sprite em si
+; Input: 
+; si = offset elemento
+; Output:
+; al = dimensão sprite
+; si = offset sprite
+SET_SPRITE proc
+    cmp si, JET_OFFSET
+    je SET_JET_SPRITE
+    cmp si, PLANET_OFFSET
+    jb SET_OBSTACLE_SPRITE
+
+SET_PLANET_SPRITE:
+    mov al, PLANET_DIM
+    mov si, [block_type + si - PLANET_OFFSET]
+    jmp EXIT_SET_SPRITE
+
+SET_JET_SPRITE:
+    mov al, ENTITY_DIM
+    mov si, offset jet
+    jmp EXIT_SET_SPRITE
+
+SET_OBSTACLE_SPRITE:
+    mov al, ENTITY_DIM
+    mov si, [obstacle_str_offset]
+
+EXIT_SET_SPRITE:
+    ret
+SET_SPRITE endp
+
 DRAW_GAME proc
 
 NEXT_SECTOR:
     mov bl, [current_sector]
     xor bh, bh
     cmp bx, 4
-    je END_WINNER
+    jne INC_CURR_SECTOR
+    jmp END_WINNER
+INC_CURR_SECTOR:
     add bl, 2
     mov [current_sector], bl
     mov bx, [sectors + bx]
@@ -54,22 +86,7 @@ UPDATE_ELEMENTS:
     push cx
     mov bx, [pos_x_high + si]
     mov cx, [pos_y_high + si]
-
-    cmp si, JET_OFFSET
-    je SET_JET_SPRITE
-    cmp si, PLANET_OFFSET
-    jae SET_PLANET_SPRITE
-    jmp SET_OBSTACLE_SPRITE
-SET_JET_SPRITE:
-    mov si, offset jet
-    jmp DRAW 
-SET_PLANET_SPRITE:
-    mov si, offset planet 
-    jmp DRAW
-SET_OBSTACLE_SPRITE:
-    mov si, [obstacle_str_offset]
-DRAW:
-    mov al, ENTITY_DIM
+    call SET_SPRITE
     call DRAW_SPRITE
     pop cx
     pop si
@@ -379,7 +396,8 @@ PRINT_PHASE proc
     mov dl, 16  ; column 
     call PRINT_STR
 
-    mov CX, 1EH
+    mov dx, 0
+    mov cx, 1EH
     call DELAY
     call CLEAR_SCREEN
 

@@ -204,11 +204,16 @@ SET_POS_CURSOR endp
 ; Delay = 2s
 DELAY proc
     push ax
+    push cx
+    push dx
 
     mov ah, 86h
-    int 15h
+    int 15h            ; BIOS wait
 
+    pop dx
+    pop cx
     pop ax
+    ret
 DELAY endp
 
 ; Le teclado

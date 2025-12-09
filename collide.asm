@@ -24,7 +24,6 @@ SET_OBSTACLE_DIM:
 
 SET_PLANET_DIM:
     mov di, PLANET_DIM
-    jmp RES_DETECTION  ; por enquanto ignorar colisao com terreno
 
 SET_DIM:
     mov dl, [sprites_dim + ENTITY_DIM]     ; jet player dimension width

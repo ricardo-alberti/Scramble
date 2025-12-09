@@ -26,15 +26,12 @@ SCREEN_WIDTH  equ 320
 SCREEN_HEIGHT equ 200
 SCREEN_TOP_LIMIT equ 20   ; limitar movimento y
 
-TERRAIN_LENGTH equ 40  ; 320/8 = 40 blocos de 8 pixels
-terrain_heights db TERRAIN_LENGTH DUP(0)
-
 MAX_BULLETS    equ 3
 bullet_active  dw MAX_BULLETS DUP(0)
 bullet_x_high  dw MAX_BULLETS DUP(0)
 bullet_x_low   dw MAX_BULLETS DUP(0)
 bullet_y       dw MAX_BULLETS DUP(0)
-BULLET_SPEED   equ 2000
+BULLET_SPEED   equ 5000
 
 BRICK_COLUMN_HEIGHT equ 80
 
@@ -48,8 +45,9 @@ sprites_dim db ENTITY_WIDTH, ENTITY_HEIGHT
             db BULLET_WIDTH, BULLET_HEIGHT
 
 ; constantes do jogo
-SECTOR_TIME   equ 15
+SECTOR_TIME   equ 10
 FIRST_SECTOR  equ -2
+LAST_SECTOR   equ 4
 
 ; flags de movimentacao (direcao)
 DOWN          equ 1000b
@@ -70,7 +68,7 @@ current_rtc db 0          ; BIOS real time clock passed
 has_moved db 0            ; flag usada para otimizacao (apenas elementos movidos sao redesenhados)
 
 ; offset das entidades 
-MAX_ELEMENTS     equ 5
+MAX_ELEMENTS     equ 29
 JET_OFFSET       equ 0
 OBSTACLE_OFFSET  equ 2
 PLANET_OFFSET    equ 8
@@ -82,6 +80,17 @@ pos_y_low dw MAX_ELEMENTS DUP(0)
 direction dw MAX_ELEMENTS DUP(IDLE)
 speed_high dw MAX_ELEMENTS DUP(0)
 speed_low dw MAX_ELEMENTS DUP(0)
+
+SPEED_PLANET    equ 10000
+TERRAIN_LENGTH  equ 13
+TERRAIN_BLOCKS  equ 24  ; soma de alturas
+terrain_heights db 2, 1, 1, 1, 3, 4, 3, 2, 1, 1, 2, 2, 1
+block_type      dw TERRAIN_BLOCKS DUP(0)
+
+MOUNTAIN_TYPE equ 0
+BRICK_TYPE    equ 4
+block_types dw offset mountain, offset mountain_top
+            dw offset brick, offset brick_top
 
 ; variaveis menu
 menu_active db 1
