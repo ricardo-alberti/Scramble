@@ -1,6 +1,200 @@
 ; sectors.asm
 
-DRAW_TERRAIN proc
+; initialize sectors
+START_SECTOR_ONE proc
+    push ax
+    push bp
+    push si
+    push bx
+    push cx
+
+    mov bp, offset sector1
+    call PRINT_PHASE
+
+    
+    mov [sector_additional_height], 0
+    mov [active_count], 15
+    mov [lives], 3
+    mov [obstacle_str_offset], offset alien
+    mov [current_timer], SECTOR_TIME
+    mov [wrap_screen], 0
+    mov [sector_bonus_points], 10
+    mov [str_int_color], 02h
+
+    ; status bar
+    call SETUP_STATUS_BAR
+    
+    ; desenhar terreno
+    call SET_TERRAIN
+
+    ; jet
+    mov [score_points], 0
+    mov [direction], IDLE
+    mov [speed_low], 30000
+    mov [pos_x_high], 20
+    mov [pos_y_high], 100 ; middle screen_height
+    mov bx, [pos_x_high]
+    mov cx, [pos_y_high]
+    mov al, ENTITY_DIM
+    mov si, offset jet
+    call DRAW_SPRITE
+
+    ; alien 1
+    mov si, OBSTACLE_OFFSET ; offset
+    mov [speed_low + si], 25000
+    mov [pos_x_high + si], SCREEN_WIDTH - ENTITY_WIDTH ; y
+    mov [pos_y_high + si], SCREEN_TOP_LIMIT ; y
+    mov [direction + si], LEFT    ; move left
+
+    ; alien 2
+    add si, 2 ; offset
+    mov [speed_low + si], 25000
+    mov [pos_x_high + si], SCREEN_WIDTH - 60 ; y
+    mov [pos_y_high + si], SCREEN_TOP_LIMIT + ENTITY_HEIGHT ; y
+    mov [direction + si], LEFT    ; move left
+
+    ; alien 3
+    add si, 2 ; offset
+    mov [speed_low + si], 25000
+    mov [pos_x_high + si], SCREEN_WIDTH - 120 ; y
+    mov [pos_y_high + si], SCREEN_TOP_LIMIT + ENTITY_HEIGHT*2 ; y
+    mov [direction + si], LEFT    ; move left
+
+    pop cx
+    pop bx
+    pop si
+    pop bp
+    pop ax
+    ret
+START_SECTOR_ONE endp
+
+START_SECTOR_TWO proc
+    push ax
+    push bp
+    push si
+    push bx
+    push cx
+
+    mov bp, offset sector2
+    call PRINT_PHASE
+
+    mov [obstacle_str_offset], offset meteor
+    mov [current_timer], SECTOR_TIME
+    mov [sector_bonus_points], 15
+    mov [str_int_color], 02h
+
+    ; status bar
+    call SETUP_STATUS_BAR
+    
+    ; desenhar terreno
+    call SET_TERRAIN
+
+    ; jet
+    mov [direction], IDLE
+    add [speed_low], SPEED_ADD_SECTOR
+    mov [pos_x_high], 20
+    mov [pos_y_high], 100 ; middle screen_height
+    mov bx, [pos_x_high]
+    mov cx, [pos_y_high]
+    mov al, ENTITY_DIM
+    mov si, offset jet
+    call DRAW_SPRITE
+
+    ; meteor
+    mov si, OBSTACLE_OFFSET ; offset
+    add [speed_low + si], SPEED_ADD_SECTOR
+    mov [pos_x_high + si], SCREEN_WIDTH - ENTITY_WIDTH ; y
+    mov [pos_y_high + si], SCREEN_TOP_LIMIT ; y
+    mov [direction + si], LEFT    ; move left
+
+    ; meteor
+    add si, 2 ; offset
+    add [speed_low + si], SPEED_ADD_SECTOR
+    mov [pos_x_high + si], SCREEN_WIDTH - 60 ; y
+    mov [pos_y_high + si], SCREEN_TOP_LIMIT + ENTITY_HEIGHT + 5; y
+    mov [direction + si], LEFT    ; move left
+
+    ; meteor
+    add si, 2 ; offset
+    add [speed_low + si], SPEED_ADD_SECTOR
+    mov [pos_x_high + si], SCREEN_WIDTH - 120 ; y
+    mov [pos_y_high + si], SCREEN_TOP_LIMIT + ENTITY_HEIGHT*2 + 5 ; y
+    mov [direction + si], LEFT    ; move left
+
+    pop cx
+    pop bx
+    pop si
+    pop bp
+    pop ax
+    ret
+START_SECTOR_TWO endp
+
+START_SECTOR_THREE proc
+    push ax
+    push bp
+    push si
+    push bx
+    push cx
+
+    mov bp, offset sector3
+    call PRINT_PHASE
+
+    mov [obstacle_str_offset], offset alien
+    mov [current_timer], SECTOR_TIME
+    mov [sector_bonus_points], 20
+    mov [str_int_color], 02h
+
+    ; status bar
+    call SETUP_STATUS_BAR
+    
+    ; desenhar terreno
+    call SET_TERRAIN
+
+    ; jet
+    mov [direction], IDLE
+    add [speed_low], SPEED_ADD_SECTOR
+    mov [pos_x_high], 20
+    mov [pos_y_high], 100 ; middle screen_height
+    mov bx, [pos_x_high]
+    mov cx, [pos_y_high]
+    mov al, ENTITY_DIM
+    mov si, offset jet
+    call DRAW_SPRITE
+
+    ; alien 1
+    mov si, OBSTACLE_OFFSET ; offset
+    add [speed_low + si], SPEED_ADD_SECTOR
+    mov [pos_x_high + si], SCREEN_WIDTH - ENTITY_WIDTH ; y
+    mov [pos_y_high + si], SCREEN_TOP_LIMIT ; y
+    mov [direction + si], LEFT    ; move left
+
+    ; alien 2
+    add si, 2 ; offset
+    add [speed_low + si], SPEED_ADD_SECTOR
+    mov [pos_x_high + si], SCREEN_WIDTH - 60 ; y
+    mov [pos_y_high + si], SCREEN_TOP_LIMIT + ENTITY_HEIGHT ; y
+    mov [direction + si], LEFT    ; move left
+
+    ; alien 3
+    add si, 2 ; offset
+    add [speed_low + si], SPEED_ADD_SECTOR
+    mov [pos_x_high + si], SCREEN_WIDTH - 120 ; y
+    mov [pos_y_high + si], SCREEN_TOP_LIMIT + ENTITY_HEIGHT*2 ; y
+    mov [direction + si], LEFT    ; move left
+
+    pop cx
+    pop bx
+    pop si
+    pop bp
+    pop ax
+    ret
+    ret
+START_SECTOR_THREE endp
+
+
+; atribui posições para os blocos (terreno)
+; incrementa active_count com base no incremento de altura por setor
+SET_TERRAIN proc
     push ax
     push bx
     push cx
@@ -9,6 +203,8 @@ DRAW_TERRAIN proc
     push di
     
     mov si, PLANET_OFFSET
+    add [sector_additional_height], 1
+    add [active_count], 13
 
     mov cx, TERRAIN_LENGTH
     mov ax, - BLOCK_WIDTH  ; x
@@ -21,6 +217,7 @@ SET_COLUMN:
     mov di, cx
     dec di
     mov cl, [terrain_heights + di]
+    add cl, [sector_additional_height]
     xor ch, ch
 SET_COLUMN_BLOCKS:
     push ax
@@ -68,192 +265,5 @@ TERRAIN_DONE:
     pop bx
     pop ax
     ret
-DRAW_TERRAIN endp
+SET_TERRAIN endp
 
-; initialize sectors
-START_SECTOR_ONE proc
-    push ax
-    push bp
-    push si
-    push bx
-    push cx
-
-    mov bp, offset sector1
-    call PRINT_PHASE
-
-    mov [lives], 3
-    mov [obstacle_str_offset], offset alien
-    mov [current_timer], SECTOR_TIME
-    mov [wrap_screen], 0
-    mov [sector_bonus_points], 10
-    mov [str_int_color], 02h
-
-    ; status bar
-    call SETUP_STATUS_BAR
-    
-    ; desenhar terreno
-    call DRAW_TERRAIN
-
-    ; jet
-    mov [score_points], 0
-    mov [direction], IDLE
-    mov [speed_low], 30000
-    mov [pos_x_high], 20
-    mov [pos_y_high], 100 ; middle screen_height
-    mov bx, [pos_x_high]
-    mov cx, [pos_y_high]
-    mov al, ENTITY_DIM
-    mov si, offset jet
-    call DRAW_SPRITE
-
-    ; meteor
-    mov si, OBSTACLE_OFFSET ; offset
-    mov [speed_low + si], 25000
-    mov [pos_x_high + si], SCREEN_WIDTH - ENTITY_WIDTH ; y
-    mov [pos_y_high + si], SCREEN_TOP_LIMIT ; y
-    mov [direction + si], LEFT    ; move left
-
-    ; meteor
-    add si, 2 ; offset
-    mov [speed_low + si], 25000
-    mov [pos_x_high + si], SCREEN_WIDTH - 60 ; y
-    mov [pos_y_high + si], SCREEN_TOP_LIMIT + 60 ; y
-    mov [direction + si], LEFT    ; move left
-
-    ; meteor
-    add si, 2 ; offset
-    mov [speed_low + si], 25000
-    mov [pos_x_high + si], SCREEN_WIDTH - 120 ; y
-    mov [pos_y_high + si], SCREEN_TOP_LIMIT + 120 ; y
-    mov [direction + si], LEFT    ; move left
-
-    pop cx
-    pop bx
-    pop si
-    pop bp
-    pop ax
-    ret
-START_SECTOR_ONE endp
-
-START_SECTOR_TWO proc
-    push ax
-    push bp
-    push si
-    push bx
-    push cx
-
-    mov bp, offset sector2
-    call PRINT_PHASE
-
-    mov [obstacle_str_offset], offset meteor
-    mov [current_timer], SECTOR_TIME
-    mov [sector_bonus_points], 15
-    mov [str_int_color], 02h
-
-    ; status bar
-    call SETUP_STATUS_BAR
-    
-    ; desenhar terreno
-    call DRAW_TERRAIN
-
-    ; jet
-    mov [direction], IDLE
-    add [speed_low], 1000
-    mov [pos_x_high], 20
-    mov [pos_y_high], 100 ; middle screen_height
-    mov bx, [pos_x_high]
-    mov cx, [pos_y_high]
-    mov al, ENTITY_DIM
-    mov si, offset jet
-    call DRAW_SPRITE
-
-    ; meteor
-    mov si, OBSTACLE_OFFSET ; offset
-    add [speed_low + si], 1000
-    mov [pos_x_high + si], SCREEN_WIDTH - ENTITY_WIDTH ; y
-    mov [pos_y_high + si], SCREEN_TOP_LIMIT ; y
-    mov [direction + si], LEFT    ; move left
-
-    ; meteor
-    add si, 2 ; offset
-    add [speed_low + si], 1000
-    mov [pos_x_high + si], SCREEN_WIDTH - 60 ; y
-    mov [pos_y_high + si], SCREEN_TOP_LIMIT + 60 ; y
-    mov [direction + si], LEFT    ; move left
-
-    ; meteor
-    add si, 2 ; offset
-    add [speed_low + si], 1000
-    mov [pos_x_high + si], SCREEN_WIDTH - 120 ; y
-    mov [pos_y_high + si], SCREEN_TOP_LIMIT + 120 ; y
-    mov [direction + si], LEFT    ; move left
-
-    pop cx
-    pop bx
-    pop si
-    pop bp
-    pop ax
-    ret
-START_SECTOR_TWO endp
-
-START_SECTOR_THREE proc
-    push ax
-    push bp
-    push si
-    push bx
-    push cx
-
-    mov bp, offset sector3
-    call PRINT_PHASE
-
-    mov [obstacle_str_offset], offset alien
-    mov [current_timer], SECTOR_TIME
-    mov [sector_bonus_points], 20
-    mov [str_int_color], 02h
-
-    ; status bar
-    call SETUP_STATUS_BAR
-    
-    ; desenhar terreno
-    call DRAW_TERRAIN
-
-    ; jet
-    mov [direction], IDLE
-    add [speed_low], 1000
-    mov [pos_x_high], 20
-    mov [pos_y_high], 100 ; middle screen_height
-    mov bx, [pos_x_high]
-    mov cx, [pos_y_high]
-    mov al, ENTITY_DIM
-    mov si, offset jet
-    call DRAW_SPRITE
-
-    ; meteor
-    mov si, OBSTACLE_OFFSET ; offset
-    add [speed_low + si], 1000
-    mov [pos_x_high + si], SCREEN_WIDTH - ENTITY_WIDTH ; y
-    mov [pos_y_high + si], SCREEN_TOP_LIMIT ; y
-    mov [direction + si], LEFT    ; move left
-
-    ; meteor
-    add si, 2 ; offset
-    add [speed_low + si], 1000
-    mov [pos_x_high + si], SCREEN_WIDTH - 60 ; y
-    mov [pos_y_high + si], SCREEN_TOP_LIMIT + 60 ; y
-    mov [direction + si], LEFT    ; move left
-
-    ; meteor
-    add si, 2 ; offset
-    add [speed_low + si], 1000
-    mov [pos_x_high + si], SCREEN_WIDTH - 120 ; y
-    mov [pos_y_high + si], SCREEN_TOP_LIMIT + 120 ; y
-    mov [direction + si], LEFT    ; move left
-
-    pop cx
-    pop bx
-    pop si
-    pop bp
-    pop ax
-    ret
-    ret
-START_SECTOR_THREE endp

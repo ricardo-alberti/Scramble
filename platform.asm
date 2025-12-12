@@ -79,7 +79,6 @@ DRAW_REC PROC
     push cx
     push dx
     
-    ; ???
     xor BH, BH
     call SET_POS_CURSOR
     mov AL, 218     
@@ -87,7 +86,6 @@ DRAW_REC PROC
     mov AH, 0AH
     int 10h
     
-    ; ???????????????????????? 
     inc DL
     call SET_POS_CURSOR
     mov AL, 196
@@ -95,7 +93,6 @@ DRAW_REC PROC
     mov AH, 0AH
     int 10h
     
-    ; ???
     add DL, CL
     call SET_POS_CURSOR
     mov AL, 191 
@@ -103,7 +100,6 @@ DRAW_REC PROC
     mov AH, 0AH
     int 10h
     
-    ; ??? (right)
     inc DH
     call SET_POS_CURSOR
     mov AL, 179 
@@ -111,7 +107,6 @@ DRAW_REC PROC
     mov AH, 0AH
     int 10h
     
-    ; ???
     inc DH
     call SET_POS_CURSOR
     mov AL, 217
@@ -119,7 +114,6 @@ DRAW_REC PROC
     mov AH, 0AH
     int 10h
     
-    ; ???????????????????????? (bottom)
     mov CX, 8
     sub DL, CL
     call SET_POS_CURSOR
@@ -127,13 +121,11 @@ DRAW_REC PROC
     mov AH, 0AH
     int 10h
 
-    ; ???
     mov CX, 1
     mov AL, 192  
     mov AH, 0AH
     int 10h
 
-    ; | (left)
     dec DH
     call SET_POS_CURSOR
     mov CX, 1

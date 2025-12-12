@@ -5,49 +5,20 @@ INCLUDE status.asm  ; barra de status
 INCLUDE sectors.asm ; inicializacao de setores
 INCLUDE collide.asm ; deteccao de colisao
 
-; atribuir dimensão de sprite em al e offset do sprite em si
-; Input: 
-; si = offset elemento
-; Output:
-; al = dimensão sprite
-; si = offset sprite
-SET_SPRITE proc
-    cmp si, JET_OFFSET
-    je SET_JET_SPRITE
-    cmp si, PLANET_OFFSET
-    jb SET_OBSTACLE_SPRITE
-
-SET_PLANET_SPRITE:
-    mov al, PLANET_DIM
-    mov si, [block_type + si - PLANET_OFFSET]
-    jmp EXIT_SET_SPRITE
-
-SET_JET_SPRITE:
-    mov al, ENTITY_DIM
-    mov si, offset jet
-    jmp EXIT_SET_SPRITE
-
-SET_OBSTACLE_SPRITE:
-    mov al, ENTITY_DIM
-    mov si, [obstacle_str_offset]
-
-EXIT_SET_SPRITE:
-    ret
-SET_SPRITE endp
-
 DRAW_GAME proc
 
 NEXT_SECTOR:
     mov bl, [current_sector]
     xor bh, bh
-    cmp bx, 4
+    cmp bx, LAST_SECTOR + 2
     jne INC_CURR_SECTOR
     jmp END_WINNER
 INC_CURR_SECTOR:
+    mov bx, [sectors + bx]
+    call bx ; inicializar setor
+    mov bl, [current_sector]
     add bl, 2
     mov [current_sector], bl
-    mov bx, [sectors + bx]
-    call bx
 
 ; -----------------------
 ; UPDATE_GAME
@@ -70,7 +41,8 @@ SECTOR_LOOP:
 
     ; atualizar entidades e redesenhar elas
     xor si, si
-    mov cx, MAX_ELEMENTS
+    mov cl, [active_count]
+    xor ch, ch
 UPDATE_ELEMENTS:
     call UPDATE_POS        ; atualizar posicao do elemento
     call RESOLVE_COLLISION ; atualizar direcao do jet
@@ -107,6 +79,37 @@ END_GAME_OVER:
 EXIT_UPD_GAME:
     ret
 DRAW_GAME endp
+
+; atribuir dimensão de sprite em al e offset do sprite em si
+; Input: 
+; si = offset elemento
+; Output:
+; al = dimensão sprite
+; si = offset sprite
+SET_SPRITE proc
+    cmp si, JET_OFFSET
+    je SET_JET_SPRITE
+    cmp si, PLANET_OFFSET
+    jb SET_OBSTACLE_SPRITE
+
+SET_PLANET_SPRITE:
+    mov al, PLANET_DIM
+    mov si, [block_type + si - PLANET_OFFSET]
+    jmp EXIT_SET_SPRITE
+
+SET_JET_SPRITE:
+    mov al, ENTITY_DIM
+    mov si, offset jet
+    jmp EXIT_SET_SPRITE
+
+SET_OBSTACLE_SPRITE:
+    mov al, ENTITY_DIM
+    mov si, [obstacle_str_offset]
+
+EXIT_SET_SPRITE:
+    ret
+SET_SPRITE endp
+
 
 ; disparar tiro
 FIRE_BULLET proc
@@ -161,7 +164,7 @@ UPDATE_BULLET_LOOP:
     je NEXT_BULLET
     
     ; mover bala para direita
-    add [bullet_x_low + si], bullet_speed
+    add [bullet_x_low + si], BULLET_SPEED
     adc [bullet_x_high + si], 0
     
     ; verificar se saiu da tela
@@ -392,8 +395,8 @@ PRINT_PHASE proc
     call CLEAR_SCREEN
 
     mov bl, 05h ; color 
-    mov dh, 12   ; line 
-    mov dl, 16  ; column 
+    mov dh, 10   ; line 
+    mov dl, 0  ; column 
     call PRINT_STR
 
     mov dx, 0
@@ -469,7 +472,7 @@ SPAWN_RIGHT proc
     push bx
     push ax
     push si
-
+    push cx
 
     mov al, [menu_active]  ; if on menu does not spawn
     cmp al, 1
@@ -485,23 +488,59 @@ SPAWN_RIGHT proc
     mov al, ENTITY_DIM
     mov si, offset empty_sprite 
     call DRAW_SPRITE
-
     pop si
     pop cx
     pop bx
 
+    mov cx, [obstacle_str_offset]
+    cmp cx, offset meteor
+    je SET_METEOR_DISTANCE
+    jmp SET_ALIEN_DISTANCE
+
+SET_METEOR_DISTANCE:
     mov bx, 5  ; limit random number
+    mov cl, [current_sector]
+    xor ch, ch
+    shr cx, 1
+    sub bx, cx
     call GET_RANDOM_VALUE  ; ax = random value
-    mov bx, ENTITY_HEIGHT + ENTITY_HEIGHT + 5   ; distance between obstacles
+    mov bx, ENTITY_HEIGHT*2 + 5
     mul bx
+    jmp SET_COORD
+
+SET_ALIEN_DISTANCE:
+    mov bx, 11  ; limit random number
+    mov cl, [current_sector]
+    xor ch, ch
+    shr cx, 1
+    sub bx, cx
+    call GET_RANDOM_VALUE  ; ax = random value
+    mul bx
+
+SET_COORD:   
+    ; salvar y e x
     add ax, SCREEN_TOP_LIMIT
     mov dx, SCREEN_WIDTH - ENTITY_WIDTH
     mov [pos_y_high + si], ax
     mov [pos_x_high + si], SCREEN_WIDTH - ENTITY_WIDTH
 
 END_SPAWN:
+    pop cx
     pop si
     pop ax
     pop bx
     ret
 SPAWN_RIGHT endp
+
+; atribuir 0 ao y e x do jet
+RESPAWN_PLAYER proc
+    mov bx, [pos_x_high]
+    mov cx, [pos_y_high]
+    mov al, ENTITY_DIM
+    mov si, offset empty_sprite
+    call DRAW_SPRITE
+
+    mov [pos_y_high], SCREEN_TOP_LIMIT
+    mov [pos_x_high], 0
+    ret
+RESPAWN_PLAYER endp

@@ -76,6 +76,7 @@ jbe RES_DETECTION
 COLLISION:
     call SPAWN_RIGHT
     call UPDATE_LIVES    
+    ; call RESPAWN_PLAYER  ; não reposicionar jet ao colidir
 
 RES_DETECTION:
     pop si
@@ -137,7 +138,7 @@ ALIEN_LOOP:
     mov bx, [bullet_x_high + si]
     mov cx, [bullet_y + si]
     mov si, offset empty_sprite
-    mov al, BULLET_Dim
+    mov al, BULLET_DIM
     call DRAW_SPRITE
     ; limpar sprite do alien
     mov bx, [pos_x_high + di]
