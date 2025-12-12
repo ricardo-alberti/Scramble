@@ -534,13 +534,33 @@ SPAWN_RIGHT endp
 
 ; atribuir 0 ao y e x do jet
 RESPAWN_PLAYER proc
+    push bx
+    push cx
+    push si
+
+    push bx
     mov bx, [pos_x_high]
     mov cx, [pos_y_high]
     mov al, ENTITY_DIM
     mov si, offset empty_sprite
     call DRAW_SPRITE
+    pop bx
 
-    mov [pos_y_high], SCREEN_TOP_LIMIT
-    mov [pos_x_high], 0
+    sub bx, ENTITY_HEIGHT
+
+    mov [direction], IDLE
+    mov [pos_y_high], bx
+
+    mov cx, bx
+    mov bx, [pos_x_high]
+    mov al, ENTITY_DIM
+    mov si, offset jet
+    call DRAW_SPRITE
+
+    mov [has_moved], 1
+
+    pop si
+    pop cx
+    pop bx
     ret
 RESPAWN_PLAYER endp

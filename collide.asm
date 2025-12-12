@@ -76,7 +76,12 @@ jbe RES_DETECTION
 COLLISION:
     call SPAWN_RIGHT
     call UPDATE_LIVES    
-    ; call RESPAWN_PLAYER  ; não reposicionar jet ao colidir
+    cmp si, PLANET_OFFSET
+    jae RESPAWN
+    jmp RES_DETECTION
+RESPAWN:
+    mov bx, [pos_y_high + si]
+    call RESPAWN_PLAYER  ; reposicionar jet ao colidir
 
 RES_DETECTION:
     pop si
