@@ -1,4 +1,7 @@
+DOSBox*
+
 *.EXE
 *.COM
 *.OBJ
 *.sh
+*.bat
