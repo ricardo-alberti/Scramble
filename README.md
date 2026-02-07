@@ -1,6 +1,12 @@
 # Scramble
-programa em Assembly 8086 inspirado no jogo Scramble, desenvolvido pela Konami em 1981
+game written in Intel 8086 Assembly, inspired by the classic arcade game Scramble, originally developed by Konami in 1981
 
-referências:
+<p align="center">
+  <img src="images/scramble_phase.png" width="700" />
+</p>
+
+references:
 - https://en.wikipedia.org/wiki/Entity_component_system
 - https://tutorialedge.net/gamedev/aabb-collision-detection-tutorial/
+- https://www.dosbox.com/DOSBoxManual.html
+
