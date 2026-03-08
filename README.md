@@ -11,5 +11,6 @@ references:
 - https://en.wikipedia.org/wiki/Entity_component_system
 - https://tutorialedge.net/gamedev/aabb-collision-detection-tutorial/
 - https://www.dosbox.com/DOSBoxManual.html
+- https://stanislavs.org/helppc/int_table.html
 
 
