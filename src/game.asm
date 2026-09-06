@@ -41,14 +41,11 @@ SECTOR_LOOP:
 
     ; atualizar entidades e redesenhar elas
     xor si, si
+    xor cx, cx
     mov cl, [active_count]
-    xor ch, ch
 UPDATE_ELEMENTS:
+    call RESOLVE_COLLISION
     call UPDATE_POS        ; atualizar posicao do elemento
-    call RESOLVE_COLLISION ; atualizar direcao do jet
-    
-    call UPDATE_BULLETS
-    call CHECK_BULLET_COLLISION
     
     mov bl, [has_moved]    ; somente redesenhar entidade se ela tiver sido atualizada
     cmp bl, 0           
@@ -90,7 +87,14 @@ SET_SPRITE proc
     cmp si, JET_OFFSET
     je SET_JET_SPRITE
     cmp si, PLANET_OFFSET
-    jb SET_OBSTACLE_SPRITE
+    jae SET_PLANET_SPRITE
+    cmp si, OBSTACLE_OFFSET
+    jb SET_BULLET_SPRITE
+
+SET_OBSTACLE_SPRITE:
+    mov al, ENTITY_DIM
+    mov si, [obstacle_str_offset]
+    jmp EXIT_SET_SPRITE
 
 SET_PLANET_SPRITE:
     mov al, PLANET_DIM
@@ -102,14 +106,13 @@ SET_JET_SPRITE:
     mov si, offset jet
     jmp EXIT_SET_SPRITE
 
-SET_OBSTACLE_SPRITE:
-    mov al, ENTITY_DIM
-    mov si, [obstacle_str_offset]
+SET_BULLET_SPRITE:
+    mov al, BULLET_DIM
+    mov si, offset bullet_sprite
 
 EXIT_SET_SPRITE:
     ret
 SET_SPRITE endp
-
 
 ; disparar tiro
 FIRE_BULLET proc
@@ -129,16 +132,21 @@ FIND_INACTIVE:
     jmp EXIT_FIRE  ; todas balas ativas
     
 FOUND_INACTIVE:
+    add si, BULLET_OFFSET
     ; Posicionar bala na frente do jato
-    mov ax, [pos_x_high]   ; X do jato
+    mov ax, [pos_x_high + JET_OFFSET]   ; X do jato
     add ax, ENTITY_WIDTH   ; frente do jato
-    mov [bullet_x_high + si], ax
+    mov [pos_x_high + si], ax
     
-    mov ax, [pos_y_high]   ; Y do jato
+    mov ax, [pos_y_high + JET_OFFSET]   ; Y do jato
     add ax, ENTITY_HEIGHT/2 ; centro vertical
-    mov [bullet_y + si], ax
+    mov [pos_y_high + si], ax
     
     ; Ativar bala
+    mov [speed_low + si], BULLET_SPEED
+    mov [direction + si], RIGHT
+
+    sub si, BULLET_OFFSET
     mov [bullet_active + si], 1
     
 EXIT_FIRE:
@@ -148,65 +156,6 @@ EXIT_FIRE:
     pop ax
     ret
 FIRE_BULLET endp
-
-; Atualizar e desenhar balas
-UPDATE_BULLETS proc
-    push ax
-    push bx
-    push cx
-    push si
-    
-    xor si, si
-    mov cx, MAX_BULLETS
-UPDATE_BULLET_LOOP:
-    push cx
-    cmp [bullet_active + si], 0
-    je NEXT_BULLET
-    
-    ; mover bala para direita
-    add [bullet_x_low + si], BULLET_SPEED
-    adc [bullet_x_high + si], 0
-    
-    ; verificar se saiu da tela
-    cmp [bullet_x_high + si], SCREEN_WIDTH - BULLET_WIDTH
-    jae CLEAR
-    jmp DRAW_BULLET
-    
-DRAW_BULLET:
-    ; desenhar bala
-    mov bx, [bullet_x_high + si]
-    mov cx, [bullet_y + si]
-    
-    ; usar DRAW_SPRITE com dimensoes do tiro
-    push si
-    mov si, offset bullet_sprite
-    mov al, BULLET_DIM
-    call DRAW_SPRITE
-    pop si
-
-    jmp NEXT_BULLET
-
-CLEAR:
-    mov bx, [bullet_x_high + si]
-    mov cx, [bullet_y + si]
-    mov al, BULLET_DIM
-    mov [bullet_active + si], 0
-    push si
-    mov si, offset empty_sprite
-    call DRAW_SPRITE
-    pop si
-    
-NEXT_BULLET:
-    add si, 2
-    pop cx
-    loop UPDATE_BULLET_LOOP
-    
-    pop si
-    pop cx
-    pop bx
-    pop ax
-    ret
-UPDATE_BULLETS endp
 
 ; mapear input para troca de direcao do player
 RESOLVE_INPUT proc
@@ -293,6 +242,7 @@ CHECK_RIGHT:
     jae block_right
     jmp STORE_X
 
+
 wrap_left:
     cmp dx, SCREEN_WIDTH
     jb STORE_X
@@ -300,11 +250,19 @@ wrap_left:
     jmp STORE_X
 
 block_right:
+    cmp si, BULLET_OFFSET
+    jae INACTIVATE_BULLETS
+
     mov cx, [wrap_screen]
     cmp cx, si
     jne wrap_left
     mov dx, SCREEN_WIDTH - ENTITY_WIDTH
     jmp STORE_X
+
+INACTIVATE_BULLETS:
+    call INACTIVATE_BULLET
+    mov [has_moved], 0
+    jmp SAVE_Y
 
 CHECK_LEFT:
     test bx, LEFT
@@ -564,3 +522,33 @@ RESPAWN_PLAYER proc
     pop bx
     ret
 RESPAWN_PLAYER endp
+
+INACTIVATE_BULLET proc
+    push si
+    
+    sub si, BULLET_OFFSET
+    mov [bullet_active + si], 0
+    
+    add si, BULLET_OFFSET
+    mov [direction + si], IDLE
+    mov [speed_high + si], 0
+
+    push ax
+    push bx
+    push cx
+    
+    mov bx, [pos_x_high + si] 
+    mov cx, [pos_y_high + si]
+    mov al, BULLET_DIM
+
+    push si
+    mov si, offset empty_sprite
+    call DRAW_SPRITE
+    pop si
+
+    pop cx
+    pop bx
+    pop ax
+    pop si
+    ret
+INACTIVATE_BULLET endp

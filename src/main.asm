@@ -36,7 +36,7 @@ sprites_dim db ENTITY_WIDTH, ENTITY_HEIGHT
 SECTOR_TIME        equ 60
 FIRST_SECTOR       equ 0
 LAST_SECTOR        equ 4
-SPEED_ADD_SECTOR   equ 17500  ; aumento de velocidade por setor
+SPEED_ADD_SECTOR   equ 8000  ; aumento de velocidade por setor
 
 ; flags de movimentacao (direcao)
 DOWN          equ 1000b
@@ -54,12 +54,20 @@ KEY_SPACE     equ 39h
 KEY_ENTER     equ 1Ch
 
 ; offset das entidades 
-INITIAL_ACTIVE_COUNT equ 15
-MAX_ELEMENTS         equ INITIAL_ACTIVE_COUNT + 39   ; max de elementos = elementos ativos inicio + 39 (aumento de altura do mapa 13 por setor)
+INITIAL_PLANET equ 11
+MAX_BULLETS    equ 6
+MAX_OBSTACLES  equ 3
+MAX_JET        equ 1
+MAX_PLANET     equ INITIAL_PLANET + 13 + 13 + 13 ; planeta inicial + aumento de terreno por fase (3 * 13)
+
+INITIAL_ACTIVE_COUNT equ MAX_JET + MAX_BULLETS + MAX_OBSTACLES + INITIAL_PLANET ; player + 3 balas + 3 obstaculos + 11 planeta inicial
+MAX_ELEMENTS         equ MAX_JET + MAX_BULLETS + MAX_OBSTACLES + MAX_PLANET
 JET_OFFSET           equ 0
-OBSTACLE_OFFSET      equ 2
-PLANET_OFFSET        equ 8
+BULLET_OFFSET        equ JET_OFFSET + MAX_JET * 2
+OBSTACLE_OFFSET      equ BULLET_OFFSET + MAX_BULLETS * 2
+PLANET_OFFSET        equ OBSTACLE_OFFSET + MAX_OBSTACLES * 2
 active_count         db  INITIAL_ACTIVE_COUNT    ; elementos ativos inicialmente
+
 ; componentes das entidades   
 pos_x_high dw MAX_ELEMENTS DUP(0)
 pos_x_low dw MAX_ELEMENTS DUP(0)          
@@ -70,12 +78,8 @@ speed_high dw MAX_ELEMENTS DUP(0)
 speed_low dw MAX_ELEMENTS DUP(0)
 
 ; vetores para balas
-MAX_BULLETS    equ 3
+BULLET_SPEED   equ 60000
 bullet_active  dw MAX_BULLETS DUP(0)
-bullet_x_high  dw MAX_BULLETS DUP(0)
-bullet_x_low   dw MAX_BULLETS DUP(0)
-bullet_y       dw MAX_BULLETS DUP(0)
-BULLET_SPEED   equ 5000
 
 ; variaveis planeta
 sector_additional_height db 0                             ; aumento de altura por setor
@@ -83,9 +87,8 @@ MOUNTAIN_TYPE   equ 0
 BRICK_TYPE      equ 4
 SPEED_PLANET    equ 10000
 TERRAIN_LENGTH  equ 13
-MAX_BLOCKS      equ 50                                    ; máximo de blocos
 terrain_heights db 1, 0, 0, 0, 1, 3, 2, 1, 0, 0, 0, 2, 1  ; altura inicial = 11 blocos
-block_type      dw MAX_BLOCKS DUP(0)                      ; tipo de bloco para desenhar
+block_type      dw MAX_PLANET DUP(0)                      ; tipo de bloco para desenhar
 block_types     dw offset mountain, offset mountain_top
                 dw offset brick, offset brick_top
 

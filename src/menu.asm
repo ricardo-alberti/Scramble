@@ -37,12 +37,13 @@ DRAW_BUTTONS:
     call DRAW_BUTTON
 
     ; animate_menu_loop
-    mov [speed_low], 10000  ; jet
-    mov [speed_low + 2], 10000 ; meteor
-    mov [speed_low + 4], 10000 ; alien
+    mov [speed_low + JET_OFFSET], 10000  ; jet
+    mov [speed_low + OBSTACLE_OFFSET], 10000 ; meteor
+    mov [speed_low + OBSTACLE_OFFSET + 2], 10000 ; alien
 ANIMATE_MENU:
     ; alien
-    mov si, 4
+    mov si, OBSTACLE_OFFSET
+    add si, 2
     mov [pos_y_high + si], 90 ; y stays fixed
     mov ax, [pos_x_high + si]
 
@@ -67,19 +68,19 @@ MOVE_CONTINUE:
     call DRAW_SPRITE
 
     ; jet
-    xor si, si
-    mov [pos_y_high], 60 ; y
-    mov [direction], RIGHT    
+    mov si, JET_OFFSET
+    mov [pos_y_high + si], 60 ; y
+    mov [direction + si], RIGHT    
     call UPDATE_POS
 
-    mov bx, [pos_x_high]
-    mov cx, [pos_y_high]
+    mov bx, [pos_x_high + si]
+    mov cx, [pos_y_high + si]
     mov al, ENTITY_DIM
     mov si, offset jet
     call DRAW_SPRITE
 
     ; meteor
-    mov si, 2
+    mov si, OBSTACLE_OFFSET
     mov [pos_y_high + si], 76 ; y
     mov [direction + si], LEFT    ; move left
     call UPDATE_POS
@@ -127,5 +128,10 @@ EXIT_UPD_MENU:
     pop dx
     pop bx
     pop ax
+
+    ; animate_menu_loop
+    mov [speed_low + JET_OFFSET], 0  ; jet
+    mov [speed_low + OBSTACLE_OFFSET], 0 ; meteor
+    mov [speed_low + OBSTACLE_OFFSET + 2], 0 ; alien
     ret
 DRAW_MENU endp

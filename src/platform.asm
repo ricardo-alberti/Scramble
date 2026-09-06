@@ -235,6 +235,7 @@ CLEAR_SCREEN proc
     mov es, ax
     xor di, di        ; start at beginning of video memory
     xor al, al        ; color 0 (black)
+    ; mov al, 1
     mov cx, 64000     ; 320 * 200 = 64,000 pixels
     rep stosb
     

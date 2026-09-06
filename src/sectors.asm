@@ -10,10 +10,9 @@ START_SECTOR_ONE proc
 
     mov bp, offset sector1
     call PRINT_PHASE
-
     
+    mov [active_count], INITIAL_ACTIVE_COUNT
     mov [sector_additional_height], 0
-    mov [active_count], 15
     mov [lives], 3
     mov [obstacle_str_offset], offset alien
     mov [current_timer], SECTOR_TIME
@@ -39,26 +38,7 @@ START_SECTOR_ONE proc
     mov si, offset jet
     call DRAW_SPRITE
 
-    ; alien 1
-    mov si, OBSTACLE_OFFSET ; offset
-    mov [speed_low + si], 25000
-    mov [pos_x_high + si], SCREEN_WIDTH - ENTITY_WIDTH ; y
-    mov [pos_y_high + si], SCREEN_TOP_LIMIT ; y
-    mov [direction + si], LEFT    ; move left
-
-    ; alien 2
-    add si, 2 ; offset
-    mov [speed_low + si], 25000
-    mov [pos_x_high + si], SCREEN_WIDTH - 60 ; y
-    mov [pos_y_high + si], SCREEN_TOP_LIMIT + ENTITY_HEIGHT ; y
-    mov [direction + si], LEFT    ; move left
-
-    ; alien 3
-    add si, 2 ; offset
-    mov [speed_low + si], 25000
-    mov [pos_x_high + si], SCREEN_WIDTH - 120 ; y
-    mov [pos_y_high + si], SCREEN_TOP_LIMIT + ENTITY_HEIGHT*2 ; y
-    mov [direction + si], LEFT    ; move left
+    call INIT_OBSTACLES
 
     pop cx
     pop bx
@@ -100,26 +80,7 @@ START_SECTOR_TWO proc
     mov si, offset jet
     call DRAW_SPRITE
 
-    ; meteor
-    mov si, OBSTACLE_OFFSET ; offset
-    add [speed_low + si], SPEED_ADD_SECTOR
-    mov [pos_x_high + si], SCREEN_WIDTH - ENTITY_WIDTH ; y
-    mov [pos_y_high + si], SCREEN_TOP_LIMIT ; y
-    mov [direction + si], LEFT    ; move left
-
-    ; meteor
-    add si, 2 ; offset
-    add [speed_low + si], SPEED_ADD_SECTOR
-    mov [pos_x_high + si], SCREEN_WIDTH - 60 ; y
-    mov [pos_y_high + si], SCREEN_TOP_LIMIT + ENTITY_HEIGHT + 5; y
-    mov [direction + si], LEFT    ; move left
-
-    ; meteor
-    add si, 2 ; offset
-    add [speed_low + si], SPEED_ADD_SECTOR
-    mov [pos_x_high + si], SCREEN_WIDTH - 120 ; y
-    mov [pos_y_high + si], SCREEN_TOP_LIMIT + ENTITY_HEIGHT*2 + 5 ; y
-    mov [direction + si], LEFT    ; move left
+    call INIT_OBSTACLES
 
     pop cx
     pop bx
@@ -161,26 +122,7 @@ START_SECTOR_THREE proc
     mov si, offset jet
     call DRAW_SPRITE
 
-    ; alien 1
-    mov si, OBSTACLE_OFFSET ; offset
-    add [speed_low + si], SPEED_ADD_SECTOR
-    mov [pos_x_high + si], SCREEN_WIDTH - ENTITY_WIDTH ; y
-    mov [pos_y_high + si], SCREEN_TOP_LIMIT ; y
-    mov [direction + si], LEFT    ; move left
-
-    ; alien 2
-    add si, 2 ; offset
-    add [speed_low + si], SPEED_ADD_SECTOR
-    mov [pos_x_high + si], SCREEN_WIDTH - 60 ; y
-    mov [pos_y_high + si], SCREEN_TOP_LIMIT + ENTITY_HEIGHT ; y
-    mov [direction + si], LEFT    ; move left
-
-    ; alien 3
-    add si, 2 ; offset
-    add [speed_low + si], SPEED_ADD_SECTOR
-    mov [pos_x_high + si], SCREEN_WIDTH - 120 ; y
-    mov [pos_y_high + si], SCREEN_TOP_LIMIT + ENTITY_HEIGHT*2 ; y
-    mov [direction + si], LEFT    ; move left
+    call INIT_OBSTACLES
 
     pop cx
     pop bx
@@ -204,7 +146,7 @@ SET_TERRAIN proc
     
     mov si, PLANET_OFFSET
     add [sector_additional_height], 1
-    add [active_count], 13
+    add [active_count], TERRAIN_LENGTH
 
     mov cx, TERRAIN_LENGTH
     mov ax, - BLOCK_WIDTH  ; x
@@ -267,3 +209,64 @@ TERRAIN_DONE:
     ret
 SET_TERRAIN endp
 
+INIT_OBSTACLES proc
+    push ax
+    push bx
+    push cx
+    push dx
+    push si
+    push di
+
+    mov si, OBSTACLE_OFFSET
+    mov cx, MAX_OBSTACLES
+    xor di, di
+
+INIT_OBSTACLE_LOOP:
+    mov ax, 20000
+    mov bl, [current_sector]
+    xor bh, bh
+    mov dx, SPEED_ADD_SECTOR
+    push ax
+    mov ax, bx
+    mul dx
+    mov bx, ax
+    pop ax
+    add ax, bx
+    mov [speed_low + si], ax
+
+    mov [direction + si], LEFT
+
+    mov ax, ENTITY_HEIGHT
+    mul di
+    add ax, SCREEN_TOP_LIMIT
+    mov [pos_y_high + si], ax
+
+    cmp di, 0
+    je X_INDEX_0
+    cmp di, 1
+    je X_INDEX_1
+    
+    mov ax, SCREEN_WIDTH - 120
+    jmp SAVE_X_POS
+X_INDEX_1:
+    mov ax, SCREEN_WIDTH - 60
+    jmp SAVE_X_POS
+X_INDEX_0:
+    mov ax, SCREEN_WIDTH - ENTITY_WIDTH
+
+SAVE_X_POS:
+    mov [pos_x_high + si], ax
+
+    add si, 2
+    inc di
+    dec cx
+    jnz INIT_OBSTACLE_LOOP
+
+    pop di
+    pop si
+    pop dx
+    pop cx
+    pop bx
+    pop ax
+    ret
+INIT_OBSTACLES endp
